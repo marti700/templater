@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"regexp"
+	"strings"
 	"text/template"
 
 	"code.sajari.com/docconv/v2"
@@ -14,19 +15,12 @@ type DocMetadata struct {
 	Document string
 }
 
-func replacePlaceholders(str string) string {
-	// Define a regular expression to match placeholders
-	pattern := `{([^{}]+):([^}]+)}`
-	re := regexp.MustCompile(pattern)
-
-	// Replace function to create the HTML input element
-	replace := func(match string) string {
-		placehoder := re.FindStringSubmatch(match)[1:] // Capture name and value from matched group
-		return fmt.Sprintf("<input type=\"text\" name='%s' placeholder='%s'></input>", placehoder[0], placehoder[0])
-	}
-
-	// Substitute all placeholders with the replace function
-	return re.ReplaceAllStringFunc(str, replace)
+func replaceInputPlaceholders(input string) string {
+	re := regexp.MustCompile(`\{([^}]+):input\}`)
+	return re.ReplaceAllStringFunc(input, func(match string) string {
+		placeholder := re.FindStringSubmatch(match)
+		return fmt.Sprintf("<input type=\"text\" name='%s' placeholder='%s'></input>", placeholder[1], placeholder[1])
+	})
 }
 
 func replaceEmptyLines(text string) string {
@@ -43,6 +37,28 @@ func replaceEmptyLines(text string) string {
 	return re.ReplaceAllStringFunc(text, replace)
 }
 
+func generateDropdown(name string, options []string) string {
+	dropdown := fmt.Sprintf("<select name='%s'>\n", strings.ReplaceAll(name, "{", ""))
+	for _, option := range options {
+		option = strings.TrimSpace(option)
+		dropdown += fmt.Sprintf("<option>%s</option>\n", option)
+	}
+	dropdown += "</select>"
+	return dropdown
+}
+
+func replaceDropdownPlaceholders(input string) string {
+	re := regexp.MustCompile(`\{[^:]+:drop;([^}]+)\}`)
+	return re.ReplaceAllStringFunc(input, func(match string) string {
+		// Extract the options part and split by ';'
+		name := strings.Split(re.FindStringSubmatch(match)[0], ":")[0]
+		optionsPart := re.FindStringSubmatch(match)[1]
+		options := strings.Split(optionsPart, ";")
+		// Generate the dropdown HTML for the options
+		return generateDropdown(name, options)
+	})
+}
+
 func main() {
 	res, err := docconv.ConvertPath("Acto de Venta Alfredo Mateo.docx")
 	if err != nil {
@@ -52,7 +68,7 @@ func main() {
 
 	// inputText := template.Must(template.New("inputText").Parse(`<input type="text" value='' placehoder=''></input>`))
 	metadata := DocMetadata{
-		Document: replaceEmptyLines(replacePlaceholders(res.Body)),
+		Document: replaceEmptyLines(replaceDropdownPlaceholders(replaceInputPlaceholders(res.Body))),
 	}
 
 	http.HandleFunc("/document", func(w http.ResponseWriter, r *http.Request) {
