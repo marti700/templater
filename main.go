@@ -19,7 +19,8 @@ func replaceInputPlaceholders(input string) string {
 	re := regexp.MustCompile(`\{([^}]+):input\}`)
 	return re.ReplaceAllStringFunc(input, func(match string) string {
 		placeholder := re.FindStringSubmatch(match)
-		return fmt.Sprintf("<input type=\"text\" name='%s' placeholder='%s'></input>", placeholder[1], placeholder[1])
+		return fmt.Sprintf("<input type=\"text\" name='%s' placeholder='%s'></input>",
+			removecurlyBrackets(placeholder[0]), placeholder[1])
 	})
 }
 
@@ -38,7 +39,7 @@ func replaceEmptyLines(text string) string {
 }
 
 func generateDropdown(name string, options []string) string {
-	dropdown := fmt.Sprintf("<select name='%s'>\n", strings.ReplaceAll(name, "{", ""))
+	dropdown := fmt.Sprintf("<select name='%s'>\n", removecurlyBrackets(name))
 	for _, option := range options {
 		option = strings.TrimSpace(option)
 		dropdown += fmt.Sprintf("<option>%s</option>\n", option)
@@ -51,12 +52,19 @@ func replaceDropdownPlaceholders(input string) string {
 	re := regexp.MustCompile(`\{[^:]+:drop;([^}]+)\}`)
 	return re.ReplaceAllStringFunc(input, func(match string) string {
 		// Extract the options part and split by ';'
-		name := strings.Split(re.FindStringSubmatch(match)[0], ":")[0]
+		name := re.FindStringSubmatch(match)[0]
 		optionsPart := re.FindStringSubmatch(match)[1]
 		options := strings.Split(optionsPart, ";")
 		// Generate the dropdown HTML for the options
 		return generateDropdown(name, options)
 	})
+}
+
+func removecurlyBrackets(name string) string {
+	nName := strings.ReplaceAll(name, "{", "")
+	nName = strings.ReplaceAll(nName, "}", "")
+
+	return nName
 }
 
 func main() {
@@ -78,6 +86,16 @@ func main() {
 			log.Fatal(err.Error())
 		}
 		// w.Write([]byte(res.Body))
+	})
+
+	http.HandleFunc("/document/create", func(w http.ResponseWriter, r *http.Request) {
+		err := r.ParseForm()
+		if err != nil {
+			errMsg := []byte("Error parsing form")
+			w.Write(errMsg)
+		}
+		f := r.Form
+		fmt.Println(f)
 	})
 
 	fmt.Println("Executing server...")
