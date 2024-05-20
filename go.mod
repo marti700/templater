@@ -15,6 +15,7 @@ require (
 	github.com/go-resty/resty/v2 v2.3.0 // indirect
 	github.com/jaytaylor/html2text v0.0.0-20200412013138-3577fbdbcff7 // indirect
 	github.com/levigross/exp-html v0.0.0-20120902181939-8df60c69a8f5 // indirect
+	github.com/lukasjarosch/go-docx v0.4.7
 	github.com/mattn/go-runewidth v0.0.9 // indirect
 	github.com/olekukonko/tablewriter v0.0.4 // indirect
 	github.com/otiai10/gosseract/v2 v2.2.4 // indirect

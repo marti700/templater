@@ -9,6 +9,7 @@ import (
 	"text/template"
 
 	"code.sajari.com/docconv/v2"
+	"github.com/lukasjarosch/go-docx"
 )
 
 type DocMetadata struct {
@@ -67,6 +68,15 @@ func removecurlyBrackets(name string) string {
 	return nName
 }
 
+func stringStringToIntfMap(strMap map[string][]string) map[string]interface{} {
+	intfMap := make(map[string]interface{}, len(strMap))
+	for key, value := range strMap {
+		// if a key have multiple values we just one the first one, a document placeholder can't have multiple values
+		intfMap[key] = value[0]
+	}
+	return intfMap
+}
+
 func main() {
 	res, err := docconv.ConvertPath("Acto de Venta Alfredo Mateo.docx")
 	if err != nil {
@@ -95,7 +105,17 @@ func main() {
 			w.Write(errMsg)
 		}
 		f := r.Form
-		fmt.Println(f)
+		file, err := docx.Open("Acto de Venta Alfredo Mateo.docx")
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+
+		defer file.Close()
+
+		placeholders := stringStringToIntfMap(f)
+
+		file.ReplaceAll(placeholders)
+		file.WriteToFile("substitution.docx")
 	})
 
 	fmt.Println("Executing server...")
