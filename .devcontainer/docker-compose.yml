@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  templater:
+    image: mcr.microsoft.com/devcontainers/base:ubuntu
+    # Uncomment the next line to use a non-root user for VS Code. On Linux, this will prevent
+    # new files getting created as root, but you may need to update the USER_UID / USER_GID
+    # environment variables in .devcontainer/Dockerfile to match your user if not 1000.
+    # user: vscode
+
+    # Overrides default command so things don't shut down after the process ends.
+    command: sleep infinity
+
+     # Mount the current directory into /workspace in the container
+    volumes:
+      - ../:/workspace:cached
+
+    # Uncomment the next four lines if you will use a ptrace-based debugger like C++, Go, and Rust.
+    # cap_add:
+    #   - SYS_PTRACE
+    # security_opt:
+    #   - seccomp:unconfined
+
+  templater-db:
+    image: postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - themisdata:/var/lib/postgresql/data
+volumes:
+  themisdata:

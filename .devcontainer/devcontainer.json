@@ -1,0 +1,21 @@
+{
+  "name": "templater",
+  "dockerComposeFile": "docker-compose.yml",
+  "workspaceFolder": "/workspace",
+  "service": "templater",
+  // "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "features": {
+    "ghcr.io/devcontainers/features/go:1": {
+      "version": "1.21"
+    },
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+  },
+  "containerEnv": {
+    "POSTGRES_CUSTOMER_SERVER_USER_NAME": "postgres",
+    "POSTGRES_CUSTOMER_SERVER_PASSWORD": "password",
+    "POSTGRES_CUSTOMER_SERVER_HOST": "templater-db",
+    "POSTGRES_PORT" : "5432",
+    "POSTGRES_CUSTOMER_SERVER_DB_NAME": "templater",
+    "CUSTOMER_WORKSPACE" : "/home/vscode/"
+  }
+}

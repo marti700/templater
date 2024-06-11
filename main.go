@@ -4,12 +4,15 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"regexp"
 	"strings"
 	"text/template"
 
 	"code.sajari.com/docconv/v2"
 	"github.com/lukasjarosch/go-docx"
+	"github.com/marti700/templater/conf"
+	"github.com/marti700/templater/customer"
 )
 
 type DocMetadata struct {
@@ -78,6 +81,14 @@ func stringStringToIntfMap(strMap map[string][]string) map[string]interface{} {
 }
 
 func main() {
+	dbConfig := conf.DBConfig{
+		Host:     os.Getenv("POSTGRES_CUSTOMER_SERVER_HOST"),
+		Port:     os.Getenv("POSTGRES_PORT"),
+		User:     os.Getenv("POSTGRES_CUSTOMER_SERVER_USER_NAME"),
+		Password: os.Getenv("POSTGRES_CUSTOMER_SERVER_PASSWORD"),
+		DBName:   os.Getenv("POSTGRES_CUSTOMER_SERVER_DB_NAME"),
+	}
+
 	res, err := docconv.ConvertPath("Acto de Venta Alfredo Mateo.docx")
 	if err != nil {
 		log.Fatal(err.Error())
@@ -88,6 +99,9 @@ func main() {
 	metadata := DocMetadata{
 		Document: replaceEmptyLines(replaceDropdownPlaceholders(replaceInputPlaceholders(res.Body))),
 	}
+
+	//get all customers
+	http.HandleFunc("/customers", customer.GetAllCustomers(dbConfig))
 
 	http.HandleFunc("/document", func(w http.ResponseWriter, r *http.Request) {
 		tmpl := template.Must(template.ParseFiles("preview.html"))
