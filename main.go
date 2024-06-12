@@ -101,7 +101,10 @@ func main() {
 	}
 
 	//get all customers
+	http.HandleFunc("/customer/newCustomer", customer.CreateCustomer(dbConfig))
+	http.HandleFunc("/customer/updateCustomer", customer.UpdateCustomer(dbConfig))
 	http.HandleFunc("/customers", customer.GetAllCustomers(dbConfig))
+	http.HandleFunc("/customer/customer", customer.UpdateCustomer(dbConfig))
 
 	http.HandleFunc("/document", func(w http.ResponseWriter, r *http.Request) {
 		tmpl := template.Must(template.ParseFiles("preview.html"))
