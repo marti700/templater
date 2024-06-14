@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>El asunto punto com </title>
+    <style>
+        .container {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            grid-template-rows: repeat(3, 0.5fr);
+        }
+
+        #buttons {
+            grid-area: 1/2/1/7;
+        }
+
+        #customer-data {
+            grid-area: 2/2/3/6;
+        }
+
+        #cus-data {
+            display: grid;
+            grid-template-columns: 33% 33% 33%;
+        }
+
+        .col1 {
+            width: 50%;
+        }
+
+        .col2 {
+            width: 50%;
+        }
+
+        #documents {
+            grid-area: 3/2/4/6;
+        }
+
+        #page {
+            transition: all ease-in 2s;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container" id="page">
+        <div id="buttons">
+            <!-- <button>Agregar</button> -->
+            <button hx-get="/themis/customer/{{.ID}}/edit" hx-target="#cus-data" hx-swap="outerHTML">Editar</button>
+        </div>
+
+        <div id="customer-data">
+            <div id="cus-data">
+                <label>Documento:</label>
+                <label>{{.ID}}</label><br />
+
+                <label>tipo de documento:</label>
+                <label>{{.IDType}}</label><br />
+
+                <label>Name:</label>
+                <label>{{.Name}}</label><br />
+
+                <label>Lastname:</label>
+                <label>{{.LastName}}</label><br />
+
+                <label>ocupation:</label>
+                <label>{{.Ocupation}}</label><br />
+
+                <label>Nationality:</label>
+                <label>{{.Nationality}}</label><br />
+
+                <label>Civil status:</label>
+                <label>{{.CivilStatus}}</label><br />
+
+                <label>Address:</label>
+                <label>{{.Address}}</label><br />
+            </div>
+
+            <div id="documents">
+                <table>
+                    <tr>
+                        <th>Name</th>
+                        <th>Path</th>
+                    </tr>
+                    <tr>
+                        <td>Report.docx</td>
+                        <td>C:\Users\John\Documents\Report.docx</td>
+                    </tr>
+                    <tr>
+                        <td>Resume.pdf</td>
+                        <td>C:\Users\John\Downloads\Resume.pdf</td>
+                    </tr>
+                    <tr>
+                        <td>Invoice.xlsx</td>
+                        <td>C:\Users\John\Desktop\Invoice.xlsx</td>
+                    </tr>
+                    <tr>
+                        <td>Letter.txt</td>
+                        <td>C:\Users\John\Letters\Letter.txt</td>
+                    </tr>
+                    <tr>
+                        <td>Photo.jpg</td>
+                        <td>C:\Users\John\Pictures\Photo.jpg</td>
+                    </tr>
+                </table>
+
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

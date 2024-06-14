@@ -103,7 +103,8 @@ func main() {
 	//get all customers
 	http.HandleFunc("/customer/newCustomer", customer.CreateCustomer(dbConfig))
 	http.HandleFunc("/customer/updateCustomer", customer.UpdateCustomer(dbConfig))
-	http.HandleFunc("/customers", customer.GetAllCustomers(dbConfig))
+	http.HandleFunc("/customers", customer.GetAllCustomers(dbConfig, "customers.html"))
+	http.HandleFunc("/customer", customer.GetCustomerById(dbConfig, "customer.html"))
 	http.HandleFunc("/customer/customer", customer.UpdateCustomer(dbConfig))
 
 	http.HandleFunc("/document", func(w http.ResponseWriter, r *http.Request) {

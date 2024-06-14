@@ -2,11 +2,11 @@ package customer
 
 import (
 	"fmt"
+	"html/template"
 	"io"
 	"log"
 	"net/http"
 	"strings"
-	"text/template"
 
 	"github.com/marti700/templater/conf"
 )
@@ -123,7 +123,7 @@ func UpdateCustomer(dbconf conf.DBConfig) func(http.ResponseWriter, *http.Reques
 	}
 }
 
-func GetAllCustomers(dbconf conf.DBConfig) func(w http.ResponseWriter, r *http.Request) {
+func GetAllCustomers(dbconf conf.DBConfig, templatePath string) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		db := dbconf.DbConn()
 
@@ -142,15 +142,14 @@ func GetAllCustomers(dbconf conf.DBConfig) func(w http.ResponseWriter, r *http.R
 			}
 			customers = append(customers, cus)
 		}
-		// parseTemplate(customers, "path to template", w)
-		fmt.Printf("All OK")
 		w.WriteHeader(http.StatusOK)
+		parseTemplate(customers, templatePath, w)
+		fmt.Printf("All OK")
 	}
 }
 
-func GetCustomerById(dbconf conf.DBConfig) func(w http.ResponseWriter, r *http.Request) {
+func GetCustomerById(dbconf conf.DBConfig, templatePath string) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("content-type", "application/json")
 		customerId := strings.TrimSpace(r.URL.Query()["id"][0])
 
 		db := dbconf.DbConn()
@@ -163,6 +162,7 @@ func GetCustomerById(dbconf conf.DBConfig) func(w http.ResponseWriter, r *http.R
 		stmt.QueryRow(customerId).Scan(&c.ID, &c.IDType, &c.Name, &c.LastName, &c.Address, &c.Nationality, &c.Ocupation, &c.CivilStatus, &c.Gender)
 
 		w.WriteHeader(http.StatusOK)
+		parseTemplate(c, templatePath, w)
 	}
 }
 
