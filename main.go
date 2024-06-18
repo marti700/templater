@@ -101,7 +101,7 @@ func main() {
 	}
 
 	//get all customers
-	http.HandleFunc("/customer/newCustomer", customer.CreateCustomer(dbConfig))
+	http.HandleFunc("/customer/newCustomer", customer.CreateCustomer(dbConfig, "new-customer.html"))
 	http.HandleFunc("/customer/updateCustomer", customer.UpdateCustomer(dbConfig))
 	http.HandleFunc("/customers", customer.GetAllCustomers(dbConfig, "customers.html"))
 	http.HandleFunc("/customer", customer.GetCustomerById(dbConfig, "customer.html"))

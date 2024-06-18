@@ -1,6 +1,7 @@
 package customer
 
 import (
+	"database/sql"
 	"fmt"
 	"html/template"
 	"io"
@@ -40,40 +41,14 @@ func NewCustomerEntity(ID, IDType, name, lastName, address, nationality, ocupati
 
 	return cust
 }
-func CreateCustomer(dbconf conf.DBConfig) func(http.ResponseWriter, *http.Request) {
+func CreateCustomer(dbconf conf.DBConfig, templatePath string) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		db := dbconf.DbConn()
-
-		c := Customer{
-			ID:          "1",
-			Name:        "name",
-			LastName:    "lastName",
-			Address:     "address",
-			Nationality: "nationality",
-			Ocupation:   "ocupation",
-			CivilStatus: "civilStatus",
-			Gender:      "gender",
-		}
-		stmt, err := db.Prepare("INSERT INTO customers VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)")
-
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
+		if r.Method == "GET" {
+			var emptyObject any
+			w.WriteHeader(http.StatusOK)
+			parseTemplate(emptyObject, templatePath, w)
 		}
 
-		defer stmt.Close()
-
-		res, err := stmt.Exec(c.ID, c.IDType, c.Name, c.LastName, c.Address, c.Nationality, c.Ocupation, c.CivilStatus, c.Gender)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		_, err = res.RowsAffected()
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		w.WriteHeader(http.StatusOK)
 	}
 }
 
@@ -127,29 +102,101 @@ func GetAllCustomers(dbconf conf.DBConfig, templatePath string) func(w http.Resp
 	return func(w http.ResponseWriter, r *http.Request) {
 		db := dbconf.DbConn()
 
-		rows, err := db.Query("Select * from customers")
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+		if r.Method == "GET" {
 
-		var customers []Customer
-		for rows.Next() {
-			cus := Customer{}
-			err := rows.Scan(&cus.ID, &cus.IDType, &cus.Name, &cus.LastName, &cus.Address, &cus.Nationality, &cus.Ocupation, &cus.CivilStatus, &cus.Gender)
+			customers, err := findAllCustomers(db)
+
 			if err != nil {
-				log.Fatal(err.Error())
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
 			}
-			customers = append(customers, cus)
+
+			w.WriteHeader(http.StatusOK)
+			parseTemplate(customers, templatePath, w)
+			fmt.Printf("All OK")
+
 		}
-		w.WriteHeader(http.StatusOK)
-		parseTemplate(customers, templatePath, w)
-		fmt.Printf("All OK")
+		if r.Method == "POST" {
+			c := Customer{
+				ID:          r.FormValue("id"),
+				IDType:      r.FormValue("idType"),
+				Name:        r.FormValue("name"),
+				LastName:    r.FormValue("lastname"),
+				Address:     r.FormValue("address"),
+				Nationality: r.FormValue("nationality"),
+				Ocupation:   r.FormValue("ocupation"),
+				CivilStatus: r.FormValue("civilStatus"),
+				Gender:      r.FormValue("gender"),
+			}
+
+			// c := Customer{
+			// 	ID:          "1",
+			// 	Name:        "name",
+			// 	LastName:    "lastName",
+			// 	Address:     "address",
+			// 	Nationality: "nationality",
+			// 	Ocupation:   "ocupation",
+			// 	CivilStatus: "civilStatus",
+			// 	Gender:      "gender",
+			// }
+
+			stmt, err := db.Prepare("INSERT INTO customers VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)")
+
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			defer stmt.Close()
+
+			res, err := stmt.Exec(c.ID, c.IDType, c.Name, c.LastName, c.Address, c.Nationality, c.Ocupation, c.CivilStatus, c.Gender)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			_, err = res.RowsAffected()
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			// redirect to all customers view, i happend to know that customers.html is the
+			// template path for that view
+
+			customers, err := findAllCustomers(db)
+			w.WriteHeader(http.StatusOK)
+			parseTemplate(customers, templatePath, w)
+			fmt.Printf("All OK")
+		}
 	}
+}
+
+func findAllCustomers(db *sql.DB) ([]Customer, error) {
+
+	rows, err := db.Query("Select * from customers")
+	if err != nil {
+		return nil, err
+	}
+
+	var customers []Customer
+
+	for rows.Next() {
+		cus := Customer{}
+		err := rows.Scan(&cus.ID, &cus.IDType, &cus.Name, &cus.LastName, &cus.Address, &cus.Nationality, &cus.Ocupation, &cus.CivilStatus, &cus.Gender)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+		customers = append(customers, cus)
+	}
+
+	return customers, nil
+
 }
 
 func GetCustomerById(dbconf conf.DBConfig, templatePath string) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
+
 		customerId := strings.TrimSpace(r.URL.Query()["id"][0])
 
 		db := dbconf.DbConn()
