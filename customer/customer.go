@@ -52,49 +52,18 @@ func CreateCustomer(dbconf conf.DBConfig, templatePath string) func(http.Respons
 	}
 }
 
-func UpdateCustomer(dbconf conf.DBConfig) func(http.ResponseWriter, *http.Request) {
+func UpdateCustomer(dbconf conf.DBConfig, templatePath string) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		db := dbconf.DbConn()
-		stmt, err := db.Prepare("UPDATE customers SET name = $1, last_name = $2, address = $3, nationality = $4, occupation =  $5, civil_status = $6 where id = $7")
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		defer stmt.Close()
-
-		c := Customer{
-			ID:          "1",
-			IDType:      "IDType",
-			Name:        "name13",
-			LastName:    "lastName",
-			Address:     "address",
-			Nationality: "nationality",
-			Ocupation:   "ocupation",
-			CivilStatus: "civilStatus",
-			Gender:      "gender",
-		}
-
-		res, err := stmt.Exec(c.Name,
-			c.LastName,
-			c.Address,
-			c.Nationality,
-			c.Ocupation,
-			c.CivilStatus,
-			c.ID)
-
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		_, err = res.RowsAffected()
+		customerId := strings.TrimSpace(r.URL.Query()["id"][0])
+		c, err := findCustomerById(db, customerId)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		w.WriteHeader(http.StatusOK)
+		parseTemplate(c, templatePath, w)
 	}
 }
 
@@ -116,6 +85,7 @@ func GetAllCustomers(dbconf conf.DBConfig, templatePath string) func(w http.Resp
 			fmt.Printf("All OK")
 
 		}
+
 		if r.Method == "POST" {
 			c := Customer{
 				ID:          r.FormValue("id"),
@@ -128,17 +98,6 @@ func GetAllCustomers(dbconf conf.DBConfig, templatePath string) func(w http.Resp
 				CivilStatus: r.FormValue("civilStatus"),
 				Gender:      r.FormValue("gender"),
 			}
-
-			// c := Customer{
-			// 	ID:          "1",
-			// 	Name:        "name",
-			// 	LastName:    "lastName",
-			// 	Address:     "address",
-			// 	Nationality: "nationality",
-			// 	Ocupation:   "ocupation",
-			// 	CivilStatus: "civilStatus",
-			// 	Gender:      "gender",
-			// }
 
 			stmt, err := db.Prepare("INSERT INTO customers VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)")
 
@@ -165,6 +124,10 @@ func GetAllCustomers(dbconf conf.DBConfig, templatePath string) func(w http.Resp
 			// template path for that view
 
 			customers, err := findAllCustomers(db)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
 			w.WriteHeader(http.StatusOK)
 			parseTemplate(customers, templatePath, w)
 			fmt.Printf("All OK")
@@ -194,22 +157,83 @@ func findAllCustomers(db *sql.DB) ([]Customer, error) {
 
 }
 
+func findCustomerById(db *sql.DB, customerId string) (Customer, error) {
+
+	var c Customer
+	stmt, err := db.Prepare("Select * from customers where id = $1")
+	if err != nil {
+		return Customer{}, err
+
+	}
+	defer stmt.Close()
+	stmt.QueryRow(customerId).Scan(&c.ID, &c.IDType, &c.Name, &c.LastName, &c.Address, &c.Nationality, &c.Ocupation, &c.CivilStatus, &c.Gender)
+
+	return c, nil
+}
+
 func GetCustomerById(dbconf conf.DBConfig, templatePath string) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		customerId := strings.TrimSpace(r.URL.Query()["id"][0])
+		if r.Method == "GET" {
 
-		db := dbconf.DbConn()
-		var c Customer
-		stmt, err := db.Prepare("Select * from customers where id = $1")
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			db := dbconf.DbConn()
+			customerId := strings.TrimSpace(r.URL.Query()["id"][0])
+
+			c, err := findCustomerById(db, customerId)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			w.WriteHeader(http.StatusOK)
+			parseTemplate(c, templatePath, w)
 		}
-		defer stmt.Close()
-		stmt.QueryRow(customerId).Scan(&c.ID, &c.IDType, &c.Name, &c.LastName, &c.Address, &c.Nationality, &c.Ocupation, &c.CivilStatus, &c.Gender)
 
-		w.WriteHeader(http.StatusOK)
-		parseTemplate(c, templatePath, w)
+		if r.Method == "PUT" {
+			c := Customer{
+				ID:          r.FormValue("id"),
+				IDType:      r.FormValue("idType"),
+				Name:        r.FormValue("name"),
+				LastName:    r.FormValue("lastname"),
+				Address:     r.FormValue("address"),
+				Nationality: r.FormValue("nationality"),
+				Ocupation:   r.FormValue("ocupation"),
+				CivilStatus: r.FormValue("civilStatus"),
+				Gender:      r.FormValue("gender"),
+			}
+
+			db := dbconf.DbConn()
+			stmt, err := db.Prepare("UPDATE customers SET name = $1, last_name = $2, address = $3, nationality = $4, occupation =  $5, civil_status = $6, gender = $7 where id = $8")
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			defer stmt.Close()
+
+			res, err := stmt.Exec(c.Name,
+				c.LastName,
+				c.Address,
+				c.Nationality,
+				c.Ocupation,
+				c.CivilStatus,
+				c.Gender,
+				c.ID)
+
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			_, err = res.RowsAffected()
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			w.WriteHeader(http.StatusOK)
+			parseTemplate(c, templatePath, w)
+		}
 	}
 }
 
