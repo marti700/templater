@@ -1,111 +1,64 @@
-<!DOCTYPE html>
-<html>
+<div class="container" id="see">
+    <div id="buttons">
+        <!-- <button>Agregar</button> -->
+        <button hx-get="/customer/updateCustomer?id={{.ID}}" hx-target="#see" hx-swap="outerHTML">Editar</button>
+    </div>
 
-<head>
-    <title>El asunto punto com </title>
-    <style>
-        .container {
-            display: grid;
-            grid-template-columns: repeat(6, 1fr);
-            grid-template-rows: repeat(3, 0.5fr);
-        }
+    <div id="customer-data">
+        <div id="cus-data">
+            <label>Documento:</label>
+            <label>{{.ID}}</label><br />
 
-        #buttons {
-            grid-area: 1/2/1/7;
-        }
+            <label>tipo de documento:</label>
+            <label>{{.IDType}}</label><br />
 
-        #customer-data {
-            grid-area: 2/2/3/6;
-        }
+            <label>Name:</label>
+            <label>{{.Name}}</label><br />
 
-        #cus-data {
-            display: grid;
-            grid-template-columns: 33% 33% 33%;
-        }
+            <label>Lastname:</label>
+            <label>{{.LastName}}</label><br />
 
-        .col1 {
-            width: 50%;
-        }
+            <label>ocupation:</label>
+            <label>{{.Ocupation}}</label><br />
 
-        .col2 {
-            width: 50%;
-        }
+            <label>Nationality:</label>
+            <label>{{.Nationality}}</label><br />
 
-        #documents {
-            grid-area: 3/2/4/6;
-        }
+            <label>Civil status:</label>
+            <label>{{.CivilStatus}}</label><br />
 
-        #page {
-            transition: all ease-in 2s;
-        }
-    </style>
-</head>
-
-<body>
-    <div class="container" id="page">
-        <div id="buttons">
-            <!-- <button>Agregar</button> -->
-            <button hx-get="/themis/customer/{{.ID}}/edit" hx-target="#cus-data" hx-swap="outerHTML">Editar</button>
+            <label>Address:</label>
+            <label>{{.Address}}</label><br />
         </div>
 
-        <div id="customer-data">
-            <div id="cus-data">
-                <label>Documento:</label>
-                <label>{{.ID}}</label><br />
+        <div id="documents">
+            <table>
+                <tr>
+                    <th>Name</th>
+                    <th>Path</th>
+                </tr>
+                <tr>
+                    <td>Report.docx</td>
+                    <td>C:\Users\John\Documents\Report.docx</td>
+                </tr>
+                <tr>
+                    <td>Resume.pdf</td>
+                    <td>C:\Users\John\Downloads\Resume.pdf</td>
+                </tr>
+                <tr>
+                    <td>Invoice.xlsx</td>
+                    <td>C:\Users\John\Desktop\Invoice.xlsx</td>
+                </tr>
+                <tr>
+                    <td>Letter.txt</td>
+                    <td>C:\Users\John\Letters\Letter.txt</td>
+                </tr>
+                <tr>
+                    <td>Photo.jpg</td>
+                    <td>C:\Users\John\Pictures\Photo.jpg</td>
+                </tr>
+            </table>
 
-                <label>tipo de documento:</label>
-                <label>{{.IDType}}</label><br />
-
-                <label>Name:</label>
-                <label>{{.Name}}</label><br />
-
-                <label>Lastname:</label>
-                <label>{{.LastName}}</label><br />
-
-                <label>ocupation:</label>
-                <label>{{.Ocupation}}</label><br />
-
-                <label>Nationality:</label>
-                <label>{{.Nationality}}</label><br />
-
-                <label>Civil status:</label>
-                <label>{{.CivilStatus}}</label><br />
-
-                <label>Address:</label>
-                <label>{{.Address}}</label><br />
-            </div>
-
-            <div id="documents">
-                <table>
-                    <tr>
-                        <th>Name</th>
-                        <th>Path</th>
-                    </tr>
-                    <tr>
-                        <td>Report.docx</td>
-                        <td>C:\Users\John\Documents\Report.docx</td>
-                    </tr>
-                    <tr>
-                        <td>Resume.pdf</td>
-                        <td>C:\Users\John\Downloads\Resume.pdf</td>
-                    </tr>
-                    <tr>
-                        <td>Invoice.xlsx</td>
-                        <td>C:\Users\John\Desktop\Invoice.xlsx</td>
-                    </tr>
-                    <tr>
-                        <td>Letter.txt</td>
-                        <td>C:\Users\John\Letters\Letter.txt</td>
-                    </tr>
-                    <tr>
-                        <td>Photo.jpg</td>
-                        <td>C:\Users\John\Pictures\Photo.jpg</td>
-                    </tr>
-                </table>
-
-            </div>
         </div>
     </div>
-</body>
-
-</html>
+</div>

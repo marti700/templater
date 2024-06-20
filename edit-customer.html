@@ -1,102 +1,50 @@
-<!DOCTYPE html>
-<html>
+<div class="container" id="edit">
+    <div id="cus-data">
+        <form id="customer-form" hx-put="/customer?id={{.ID}}" hx-target="#edit" hx-swap="outerHTML">
+            <label for="id">Documento: </label>
+            <input type="text" id="id" name="id" value="{{.ID}}"><br />
 
-<head>
-    <title>El asunto punto com </title>
-    <style>
-        .container {
-            display: grid;
-            grid-template-columns: repeat(6, 1fr);
-            grid-template-rows: repeat(3, 0.5fr);
-        }
+            <label for="documentType">Tipo de documento</label>
+            <select id="documentType" name="idType">
+                <option>Cedula</option>
+                <option>Passaporte</option>
+            </select><br />
 
-        #buttons {
-            grid-area: 1/2/1/7;
-        }
+            <label for="name">Nombres: </label>
+            <input type="text" id="name" name="name" value="{{.Name}}"><br />
 
-        #customer-data {
-            grid-area: 2/2/3/6;
-        }
+            <label for="lastname">Apellidos: </label>
+            <input type="text" id="lastname" name="lastname" value="{{.LastName}}"><br />
 
-        #cus-data {
-            display: grid;
-            grid-template-columns: 33% 33% 33%;
-        }
+            <label for="ocupation">Ocupacion: </label>
+            <input type="text" id="ocupation" name="ocupation" value="{{.Ocupation}}"><br />
 
-        .col1 {
-            width: 50%;
-        }
+            <label for="nationality">Nacionalidad: </label>
+            <input type="text" id="nationality" name="nationality" value="{{.Nationality}}"><br />
 
-        .col2 {
-            width: 50%;
-        }
+            <label for="gender">Genero:</label>
+            <select id="gender" name="civilStatus" value="{{.Gender}}">
+                <option>Masculino</option>
+                <option>Femenino</option>
+            </select><br />
+            <label for="civilStatus">Estado Civil:</label>
 
-        #documents {
-            grid-area: 3/2/4/6;
-        }
+            <select id="civilStatus" name="civilStatus" placeholder="{{.CivilStatus}}">
+                <option>Soltero</option>
+                <option>Casado</option>
+                <option>Divorciado</option>
+                <option>Viudo</option>
+            </select><br />
 
-        #page {
-            transition: all ease-in 2s;
-        }
-    </style>
-</head>
+            <label for="address">Direccion:</label>
+            <textarea id="address" name="address">{{.Address}}</textarea><br />
 
-<body>
+            <div>
+                <button id="submit">Aceptar</button>
+                <button id="cancel" hx-get="/customer?id={{.ID}}" hx-target="#page"
+                    hx-swap="outerHTML">Cancelar</button>
+            </div>
 
-    <div class="container" id="page">
-        <div id="cus-data">
-            <form id="customer-form" hx-put="/customer?id={{.ID}}" hx-target="#page" hx-swap="outerHTML">
-                <label for="id">Documento: </label>
-                <input type="text" id="id" name="id" value="{{.ID}}"><br />
-
-                <label for="documentType">Tipo de documento</label>
-                <select id="documentType" name="idType">
-                    <option>Cedula</option>
-                    <option>Passaporte</option>
-                </select><br />
-
-                <label for="name">Nombres: </label>
-                <input type="text" id="name" name="name" value="{{.Name}}"><br />
-
-                <label for="lastname">Apellidos: </label>
-                <input type="text" id="lastname" name="lastname" value="{{.LastName}}"><br />
-
-                <label for="ocupation">Ocupacion: </label>
-                <input type="text" id="ocupation" name="ocupation" value="{{.Ocupation}}"><br />
-
-                <label for="nationality">Nacionalidad: </label>
-                <input type="text" id="nationality" name="nationality" value="{{.Nationality}}"><br />
-
-                <label for="gender">Genero:</label>
-                <select id="gender" name="civilStatus" value="{{.Gender}}">
-                    <option>Masculino</option>
-                    <option>Femenino</option>
-                </select><br />
-                <label for="civilStatus">Estado Civil:</label>
-
-                <select id="civilStatus" name="civilStatus" placeholder="{{.CivilStatus}}">
-                    <option>Soltero</option>
-                    <option>Casado</option>
-                    <option>Divorciado</option>
-                    <option>Viudo</option>
-                </select><br />
-
-                <label for="address">Direccion:</label>
-                <textarea id="address" name="address">{{.Address}}</textarea><br />
-
-                <div>
-                    <button id="submit">Aceptar</button>
-                    <button id="cancel" hx-get="/customer?id={{.ID}}" hx-target="#page"
-                        hx-swap="outerHTML">Cancelar</button>
-                </div>
-
-            </form>
-        </div>
-        <script src="https://unpkg.com/htmx.org@1.9.8"
-            integrity="sha384-rgjA7mptc2ETQqXoYC3/zJvkU7K/aP44Y+z7xQuJiVnB/422P/Ak+F/AqFR7E4Wr"
-            crossorigin="anonymous"></script>
-
+        </form>
     </div>
-</body>
-
-</html>
+</div>

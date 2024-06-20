@@ -42,14 +42,14 @@
 </head>
 
 <body>
-    <div class="container" id="page">
+    <div class="container" id="newcustomer">
         <!-- <div id="buttons"> -->
         <!-- <button>Agregar</button> -->
         <!-- <button>Editar</button> -->
         <!-- </div> -->
 
         <div id="customer-data">
-            <form id="customer-form" hx-post="/customers" hx-target="#page" hx-swap="outerHTML">
+            <form id="customer-form" hx-post="/customers" hx-target="#newcustomer" hx-swap="outerHTML">
                 <div id="cus-data">
                     <label for="id">Documento: </label>
                     <input type="text" id="id" name="id" placeholder="Cedula"><br />
