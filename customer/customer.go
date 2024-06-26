@@ -43,12 +43,9 @@ func NewCustomerEntity(ID, IDType, name, lastName, address, nationality, ocupati
 }
 func CreateCustomer(dbconf conf.DBConfig, templatePath string) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == "GET" {
-			var emptyObject any
-			w.WriteHeader(http.StatusOK)
-			parseTemplate(emptyObject, templatePath, w)
-		}
-
+		var emptyObject any
+		w.WriteHeader(http.StatusOK)
+		parseTemplate(emptyObject, templatePath, w)
 	}
 }
 

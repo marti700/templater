@@ -54,6 +54,53 @@ func DbContainer() *postgres.PostgresContainer {
 }
 
 func TestSaveCustomer(t *testing.T) {
+	req, err := http.NewRequest("GET", "http://localhost:9090/newCustomer", nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	reqRecorder := customerTestUtil(req, "../new-customer.html", CreateCustomer)
+
+	// Check the status code and the body of the response.
+	if status := reqRecorder.Code; status != http.StatusOK {
+		t.Error("handler returned wrong status code:", status)
+	}
+
+}
+
+func TestUpdateCustomer(t *testing.T) {
+
+	req, err := http.NewRequest("GET", "http://localhost:9090/updateCustomer?id=1234567890", nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	reqRecorder := customerTestUtil(req, "../edit-customer.html", UpdateCustomer)
+
+	// Check the status code and the body of the response.
+	if status := reqRecorder.Code; status != http.StatusOK {
+		t.Error("handler returned wrong status code:", status)
+	}
+
+}
+
+func TestGetAllCustomers(t *testing.T) {
+
+	req, err := http.NewRequest("GET", "http://localhost:9090/customers", nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	reqRecorder := customerTestUtil(req, "../customers.html", GetAllCustomers)
+
+	// Check the status code and the body of the response.
+	if status := reqRecorder.Code; status != http.StatusOK {
+		t.Error("handler returned wrong status code:", status)
+	}
+
+}
+
+func TestGetAllCustomersAfterSave(t *testing.T) {
 
 	var b bytes.Buffer
 	w := multipart.NewWriter(&b)
@@ -68,13 +115,59 @@ func TestSaveCustomer(t *testing.T) {
 
 	w.Close()
 
-	req, err := http.NewRequest("POST", "http://localhost:9090/newCustomer", &b)
+	req, err := http.NewRequest("POST", "http://localhost:9090/customers", &b)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	req.Header.Set("Content-Type", w.FormDataContentType())
-	reqRecorder := customerTestUtil(req, "new-customer.html", CreateCustomer)
+	reqRecorder := customerTestUtil(req, "../customers.html", GetAllCustomers)
+
+	// Check the status code and the body of the response.
+	if status := reqRecorder.Code; status != http.StatusOK {
+		t.Error("handler returned wrong status code:", status)
+	}
+
+}
+
+func TestGetCustomerById(t *testing.T) {
+
+	req, err := http.NewRequest("GET", "http://localhost:9090/customers?id=1234567890", nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	reqRecorder := customerTestUtil(req, "../customer.html", GetCustomerById)
+
+	// Check the status code and the body of the response.
+	if status := reqRecorder.Code; status != http.StatusOK {
+		t.Error("handler returned wrong status code:", status)
+	}
+
+}
+
+func TestGetCustomerByIdAfterUpdate(t *testing.T) {
+
+	var b bytes.Buffer
+	w := multipart.NewWriter(&b)
+	w.WriteField("id", "1234")
+	w.WriteField("idType", "passport")
+	w.WriteField("name", "Test")
+	w.WriteField("lastname", "The Tester")
+	w.WriteField("address", "Test Avenue #87")
+	w.WriteField("nationality", "Testlandian")
+	w.WriteField("ocupation", "Tester")
+	w.WriteField("civilStatus", "SINGLE")
+
+	w.Close()
+
+	req, err := http.NewRequest("PUT", "http://localhost:9090/customers?id=1234567890", nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	req.Header.Set("Content-Type", w.FormDataContentType())
+	reqRecorder := customerTestUtil(req, "../customer.html", GetCustomerById)
 
 	// Check the status code and the body of the response.
 	if status := reqRecorder.Code; status != http.StatusOK {
