@@ -12,22 +12,32 @@
 <body>
 
     <div id="container-form">
+        <img id="insert-x" type="image" hx-trigger="click" hx-target="#customer-selection" hx-get="/customer/select"
+            data-bs-toggle="modal" data-bs-target="#customer-selection"
+            src="https://upload.wikimedia.org/wikipedia/commons/0/0e/Add_user_icon_%28blue%29.svg"
+            style="cursor: pointer; width: 2%; height: 2%;" />
         <form id="document-form">
             <div id="document-container" style="text-align: justify; width: 50%; margin: auto;">
-            {{.Document}}
-            <div id="control-container" style="width: 76%;">
-                <div id="controls" style="text-align: right;">
-                    <button>Cancelar</button>
-                    <button hx-post="/document/create">Aceptar</button>
+                {{.Document}}
+                <div id="control-container" style="width: 76%;">
+                    <div id="controls" style="text-align: right;">
+                        <button>Cancelar</button>
+                        <button hx-post="/document/create">Aceptar</button>
+                    </div>
                 </div>
-            </div>
 
-            <div id="customer-selection" class="modal modal-blur" style="display: none" aria-hidden="false"
-                tabindex="-1">
-                <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
-                    <div class="modal-content"></div>
+                <div id="customer-selection" class="modal modal-blur" style="display: none" aria-hidden="false"
+                    tabindex="-1">
+                    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+                        <div class="modal-content"></div>
+                    </div>
                 </div>
-            </div>
+                <div id="customer-selection" class="modal modal-blur" style="display: none" aria-hidden="false"
+                    tabindex="-1">
+                    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+                        <div class="modal-content"></div>
+                    </div>
+                </div>
         </form>
     </div>
 
@@ -36,6 +46,9 @@
         integrity="sha384-rgjA7mptc2ETQqXoYC3/zJvkU7K/aP44Y+z7xQuJiVnB/422P/Ak+F/AqFR7E4Wr"
         crossorigin="anonymous"></script>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+        crossorigin="anonymous"></script>
 </body>
 
 </html>

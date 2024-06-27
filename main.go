@@ -105,6 +105,7 @@ func main() {
 	http.HandleFunc("/customer/updateCustomer", customer.UpdateCustomer(dbConfig, "edit-customer.html"))
 	http.HandleFunc("/customers", customer.GetAllCustomers(dbConfig, "customers.html"))
 	http.HandleFunc("/customer", customer.GetCustomerById(dbConfig, "customer.html"))
+	http.HandleFunc("/customer/select", customer.SelectCustomer(dbConfig, "customer-selection.html"))
 	// http.HandleFunc("/customer/customer", customer.UpdateCustomer(dbConfig))
 
 	http.HandleFunc("/document", func(w http.ResponseWriter, r *http.Request) {

@@ -1,0 +1,52 @@
+<div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title">Selecciona un cliente</h5>
+        </div>
+        <div class="modal-body">
+            <div id="select-customer" class="container">
+                <div>
+                    <table id="customer-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Last Name</th>
+                                <th>Accion</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{range .}}
+                            <tr>
+                                <td>{{.Name}}</td>
+                                <td>{{.LastName}}</td>
+                                <td><button hx-get="/customer?id={{.ID}}" hx-target="#page"
+                                        hx-swap="outterHTML">Select</button>
+                                </td>
+                            </tr>
+                            {{end}}
+                        </tbody>
+                    </table>
+                </div>
+                <div id="customers"></div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/gridjs@5.1.0/dist/gridjs.umd.js"></script>
+<script>
+    setTimeout(function () {
+        const customerTable = document.getElementById("customer-table");
+        var grid = new gridjs.Grid({
+            from: customerTable,
+            search: true,
+        });
+
+        grid.render(document.getElementById("customers"));
+    }, 1);
+
+
+</script>

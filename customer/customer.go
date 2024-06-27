@@ -132,42 +132,6 @@ func GetAllCustomers(dbconf conf.DBConfig, templatePath string) func(w http.Resp
 	}
 }
 
-func findAllCustomers(db *sql.DB) ([]Customer, error) {
-
-	rows, err := db.Query("Select * from customers")
-	if err != nil {
-		return nil, err
-	}
-
-	var customers []Customer
-
-	for rows.Next() {
-		cus := Customer{}
-		err := rows.Scan(&cus.ID, &cus.IDType, &cus.Name, &cus.LastName, &cus.Address, &cus.Nationality, &cus.Ocupation, &cus.CivilStatus, &cus.Gender)
-		if err != nil {
-			log.Fatal(err.Error())
-		}
-		customers = append(customers, cus)
-	}
-
-	return customers, nil
-
-}
-
-func findCustomerById(db *sql.DB, customerId string) (Customer, error) {
-
-	var c Customer
-	stmt, err := db.Prepare("Select * from customers where id = $1")
-	if err != nil {
-		return Customer{}, err
-
-	}
-	defer stmt.Close()
-	stmt.QueryRow(customerId).Scan(&c.ID, &c.IDType, &c.Name, &c.LastName, &c.Address, &c.Nationality, &c.Ocupation, &c.CivilStatus, &c.Gender)
-
-	return c, nil
-}
-
 func GetCustomerById(dbconf conf.DBConfig, templatePath string) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 
@@ -232,6 +196,56 @@ func GetCustomerById(dbconf conf.DBConfig, templatePath string) func(w http.Resp
 			parseTemplate(c, templatePath, w)
 		}
 	}
+}
+
+func SelectCustomer(dbconf conf.DBConfig, templatePath string) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		db := dbconf.DbConn()
+		c, err := findAllCustomers(db)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+		parseTemplate(c, templatePath, w)
+	}
+}
+
+func findAllCustomers(db *sql.DB) ([]Customer, error) {
+
+	rows, err := db.Query("Select * from customers")
+	if err != nil {
+		return nil, err
+	}
+
+	var customers []Customer
+
+	for rows.Next() {
+		cus := Customer{}
+		err := rows.Scan(&cus.ID, &cus.IDType, &cus.Name, &cus.LastName, &cus.Address, &cus.Nationality, &cus.Ocupation, &cus.CivilStatus, &cus.Gender)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+		customers = append(customers, cus)
+	}
+
+	return customers, nil
+
+}
+
+func findCustomerById(db *sql.DB, customerId string) (Customer, error) {
+
+	var c Customer
+	stmt, err := db.Prepare("Select * from customers where id = $1")
+	if err != nil {
+		return Customer{}, err
+
+	}
+	defer stmt.Close()
+	stmt.QueryRow(customerId).Scan(&c.ID, &c.IDType, &c.Name, &c.LastName, &c.Address, &c.Nationality, &c.Ocupation, &c.CivilStatus, &c.Gender)
+
+	return c, nil
 }
 
 func parseTemplate(obj any, templatePath string, writter io.Writer) {
