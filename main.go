@@ -64,6 +64,19 @@ func replaceDropdownPlaceholders(input string) string {
 	})
 }
 
+func replaceImgPlaceHolders(input string, additionalAttrs string) string {
+	re := regexp.MustCompile(`\{img:([^}]*)\}`)
+	return re.ReplaceAllStringFunc(input, func(match string) string {
+		subMatch := re.FindStringSubmatch(match)[1]
+		attrs := strings.Split(subMatch, ";")
+		if len(attrs) == 1 {
+			return fmt.Sprintf("<img class='%s' %s></img>", subMatch, additionalAttrs)
+		} else {
+			return fmt.Sprintf("<img class='%s' %s %s></img>", attrs[0], attrs[1], additionalAttrs)
+		}
+	})
+}
+
 func removecurlyBrackets(name string) string {
 	nName := strings.ReplaceAll(name, "{", "")
 	nName = strings.ReplaceAll(nName, "}", "")
@@ -89,15 +102,18 @@ func main() {
 		DBName:   os.Getenv("POSTGRES_CUSTOMER_SERVER_DB_NAME"),
 	}
 
-	res, err := docconv.ConvertPath("Acto de Venta Alfredo Mateo.docx")
+	res, err := docconv.ConvertPath("Acto de Venta Alfredo Mateo3.docx")
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 	fmt.Println(res.Body)
 
 	// inputText := template.Must(template.New("inputText").Parse(`<input type="text" value='' placehoder=''></input>`))
+
+	additionalAttributes := `type="image" hx-trigger="click" hx-target="#customer-selection" hx-get="/customer/select" data-bs-toggle="modal" data-bs-target="#customer-selection" src="https://upload.wikimedia.org/wikipedia/commons/0/0e/Add_user_icon_%28blue%29.svg" style="cursor: pointer; width: 2%; height: 2%;"`
+
 	metadata := DocMetadata{
-		Document: replaceEmptyLines(replaceDropdownPlaceholders(replaceInputPlaceholders(res.Body))),
+		Document: replaceEmptyLines(replaceImgPlaceHolders(replaceDropdownPlaceholders(replaceInputPlaceholders(res.Body)), additionalAttributes)),
 	}
 
 	//get all customers
