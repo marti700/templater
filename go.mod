@@ -6,7 +6,6 @@ toolchain go1.21.11
 
 require (
 	code.sajari.com/docconv/v2 v2.0.0-pre.4
-	github.com/a-h/templ v0.2.707
 	github.com/lib/pq v1.10.9
 	github.com/testcontainers/testcontainers-go v0.31.0
 	github.com/testcontainers/testcontainers-go/modules/postgres v0.31.0

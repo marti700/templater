@@ -70,9 +70,12 @@ func replaceImgPlaceHolders(input string, additionalAttrs string) string {
 		subMatch := re.FindStringSubmatch(match)[1]
 		attrs := strings.Split(subMatch, ";")
 		if len(attrs) == 1 {
-			return fmt.Sprintf("<img class='%s' %s></img>", subMatch, additionalAttrs)
+			className := subMatch
+			return fmt.Sprintf(`<img class='%s' type="image" hx-trigger="click" hx-target="#customer-selection" hx-get="/customer/selec?p=%s" data-bs-toggle="modal" data-bs-target="#customer-selection" src="https://upload.wikimedia.org/wikipedia/commons/0/0e/Add_user_icon_%%28blue%%29.svg" style="cursor: pointer; width: 2%%; height: 2%%"; ></img>`, className, className[len(className)-1:])
 		} else {
-			return fmt.Sprintf("<img class='%s' %s %s></img>", attrs[0], attrs[1], additionalAttrs)
+			className := attrs[0]
+			hiddenAttr := attrs[1]
+			return fmt.Sprintf(`<img class='%s' %s type="image" hx-trigger="click" hx-target="#customer-selection" hx-get="/customer/select?p=%s" data-bs-toggle="modal" data-bs-target="#customer-selection" src="https://upload.wikimedia.org/wikipedia/commons/0/0e/Add_user_icon_%%28blue%%29.svg" style="cursor: pointer; width: 2%%; height: 2%%";></img>`, className, hiddenAttr, className[len(className)-1:])
 		}
 	})
 }
@@ -102,7 +105,7 @@ func main() {
 		DBName:   os.Getenv("POSTGRES_CUSTOMER_SERVER_DB_NAME"),
 	}
 
-	res, err := docconv.ConvertPath("Acto de Venta Alfredo Mateo3.docx")
+	res, err := docconv.ConvertPath("Acto de Venta Alfredo Mateo4.docx")
 	if err != nil {
 		log.Fatal(err.Error())
 	}
@@ -112,7 +115,7 @@ func main() {
 
 	additionalAttributes := `type="image" hx-trigger="click" hx-target="#customer-selection" hx-get="/customer/select" data-bs-toggle="modal" data-bs-target="#customer-selection" src="https://upload.wikimedia.org/wikipedia/commons/0/0e/Add_user_icon_%28blue%29.svg" style="cursor: pointer; width: 2%; height: 2%;"`
 
-	metadata := DocMetadata{
+	metadata = DocMetadata{
 		Document: replaceEmptyLines(replaceImgPlaceHolders(replaceDropdownPlaceholders(replaceInputPlaceholders(res.Body)), additionalAttributes)),
 	}
 
@@ -130,6 +133,18 @@ func main() {
 		if err != nil {
 			log.Fatal(err.Error())
 		}
+		// w.Write([]byte(res.Body))
+	})
+	http.HandleFunc("/document/update", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println("Tamo aqui")
+		cusID := r.URL.Query()["id"][0]
+		c, _ := customer.FindCustomerById(dbConfig, cusID)
+		fmt.Println(c)
+		// tmpl := template.Must(template.ParseFiles("preview.html"))
+		// err := tmpl.Execute(w, metadata)
+		// if err != nil {
+		// 	log.Fatal(err.Error())
+		// }
 		// w.Write([]byte(res.Body))
 	})
 

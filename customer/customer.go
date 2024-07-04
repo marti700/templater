@@ -1,7 +1,7 @@
 package customer
 
 import (
-	"database/sql"
+	// "database/sql"
 	"fmt"
 	"html/template"
 	"io"
@@ -51,9 +51,8 @@ func CreateCustomer(dbconf conf.DBConfig, templatePath string) func(http.Respons
 
 func UpdateCustomer(dbconf conf.DBConfig, templatePath string) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		db := dbconf.DbConn()
 		customerId := strings.TrimSpace(r.URL.Query()["id"][0])
-		c, err := findCustomerById(db, customerId)
+		c, err := FindCustomerById(dbconf, customerId)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -66,11 +65,9 @@ func UpdateCustomer(dbconf conf.DBConfig, templatePath string) func(http.Respons
 
 func GetAllCustomers(dbconf conf.DBConfig, templatePath string) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		db := dbconf.DbConn()
 
 		if r.Method == "GET" {
-
-			customers, err := findAllCustomers(db)
+			customers, err := FindAllCustomers(dbconf)
 
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -84,6 +81,7 @@ func GetAllCustomers(dbconf conf.DBConfig, templatePath string) func(w http.Resp
 		}
 
 		if r.Method == "POST" {
+			db := dbconf.DbConn()
 			c := Customer{
 				ID:          r.FormValue("id"),
 				IDType:      r.FormValue("idType"),
@@ -120,7 +118,7 @@ func GetAllCustomers(dbconf conf.DBConfig, templatePath string) func(w http.Resp
 			// redirect to all customers view, i happend to know that customers.html is the
 			// template path for that view
 
-			customers, err := findAllCustomers(db)
+			customers, err := FindAllCustomers(dbconf)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
@@ -137,10 +135,9 @@ func GetCustomerById(dbconf conf.DBConfig, templatePath string) func(w http.Resp
 
 		if r.Method == "GET" {
 
-			db := dbconf.DbConn()
 			customerId := strings.TrimSpace(r.URL.Query()["id"][0])
 
-			c, err := findCustomerById(db, customerId)
+			c, err := FindCustomerById(dbconf, customerId)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
@@ -200,8 +197,7 @@ func GetCustomerById(dbconf conf.DBConfig, templatePath string) func(w http.Resp
 
 func SelectCustomer(dbconf conf.DBConfig, templatePath string) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		db := dbconf.DbConn()
-		c, err := findAllCustomers(db)
+		c, err := FindAllCustomers(dbconf)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -212,8 +208,8 @@ func SelectCustomer(dbconf conf.DBConfig, templatePath string) func(w http.Respo
 	}
 }
 
-func findAllCustomers(db *sql.DB) ([]Customer, error) {
-
+func FindAllCustomers(dbconf conf.DBConfig) ([]Customer, error) {
+	db := dbconf.DbConn()
 	rows, err := db.Query("Select * from customers")
 	if err != nil {
 		return nil, err
@@ -234,8 +230,9 @@ func findAllCustomers(db *sql.DB) ([]Customer, error) {
 
 }
 
-func findCustomerById(db *sql.DB, customerId string) (Customer, error) {
+func FindCustomerById(dbconf conf.DBConfig, customerId string) (Customer, error) {
 
+	db := dbconf.DbConn()
 	var c Customer
 	stmt, err := db.Prepare("Select * from customers where id = $1")
 	if err != nil {

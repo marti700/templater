@@ -19,8 +19,10 @@
                             <tr>
                                 <td>{{.Name}}</td>
                                 <td>{{.LastName}}</td>
-                                <td><button hx-get="/customer?id={{.ID}}" hx-target="#page"
+                                <!-- <td><button hx-get="/customer?id={{.ID}}" hx-target="#page"
                                         hx-swap="outterHTML">Select</button>
+                                </td> -->
+                                <td><button hx-get="/document/update?id={{.ID}}">Select</button>
                                 </td>
                             </tr>
                             {{end}}
@@ -44,7 +46,7 @@
             from: customerTable,
             search: true,
         });
-
+        grid.on('ready', function () { console.log("bien!!!"); htmx.process(document.getElementById("customers")) });
         grid.render(document.getElementById("customers"));
     }, 1);
 
