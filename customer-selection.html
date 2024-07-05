@@ -19,10 +19,8 @@
                             <tr>
                                 <td>{{.Name}}</td>
                                 <td>{{.LastName}}</td>
-                                <!-- <td><button hx-get="/customer?id={{.ID}}" hx-target="#page"
-                                        hx-swap="outterHTML">Select</button>
-                                </td> -->
-                                <td><button hx-get="/document/update?id={{.ID}}">Select</button>
+                                <td>
+                                    <button type="button" data-bs-dismiss="modal" onclick="fillForm('{{.Name}}', '{{.Nationality}}', '{{.CivilStatus}}','{{.Ocupation}}', '{{.IDType}}', '{{.ID}}', '{{.Address}}', '{{.PlaceInDoc}}') ">Select</button>
                                 </td>
                             </tr>
                             {{end}}

@@ -71,7 +71,7 @@ func replaceImgPlaceHolders(input string, additionalAttrs string) string {
 		attrs := strings.Split(subMatch, ";")
 		if len(attrs) == 1 {
 			className := subMatch
-			return fmt.Sprintf(`<img class='%s' type="image" hx-trigger="click" hx-target="#customer-selection" hx-get="/customer/selec?p=%s" data-bs-toggle="modal" data-bs-target="#customer-selection" src="https://upload.wikimedia.org/wikipedia/commons/0/0e/Add_user_icon_%%28blue%%29.svg" style="cursor: pointer; width: 2%%; height: 2%%"; ></img>`, className, className[len(className)-1:])
+			return fmt.Sprintf(`<img class='%s' type="image" hx-trigger="click" hx-target="#customer-selection" hx-get="/customer/select?p=%s" data-bs-toggle="modal" data-bs-target="#customer-selection" src="https://upload.wikimedia.org/wikipedia/commons/0/0e/Add_user_icon_%%28blue%%29.svg" style="cursor: pointer; width: 2%%; height: 2%%"; ></img>`, className, className[len(className)-1:])
 		} else {
 			className := attrs[0]
 			hiddenAttr := attrs[1]
@@ -115,7 +115,7 @@ func main() {
 
 	additionalAttributes := `type="image" hx-trigger="click" hx-target="#customer-selection" hx-get="/customer/select" data-bs-toggle="modal" data-bs-target="#customer-selection" src="https://upload.wikimedia.org/wikipedia/commons/0/0e/Add_user_icon_%28blue%29.svg" style="cursor: pointer; width: 2%; height: 2%;"`
 
-	metadata = DocMetadata{
+	metadata := DocMetadata{
 		Document: replaceEmptyLines(replaceImgPlaceHolders(replaceDropdownPlaceholders(replaceInputPlaceholders(res.Body)), additionalAttributes)),
 	}
 

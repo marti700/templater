@@ -22,6 +22,7 @@ type Customer struct {
 	Ocupation   string
 	CivilStatus string
 	Gender      string
+	PlaceInDoc  string
 }
 
 // A constructor function used to create a customer
@@ -201,6 +202,11 @@ func SelectCustomer(dbconf conf.DBConfig, templatePath string) func(w http.Respo
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
+		}
+
+		customerPlaceInDocument := r.URL.Query()["p"][0]
+		for i := range c {
+			c[i].PlaceInDoc = customerPlaceInDocument
 		}
 
 		w.WriteHeader(http.StatusOK)
