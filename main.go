@@ -69,13 +69,16 @@ func replaceImgPlaceHolders(input string, additionalAttrs string) string {
 	return re.ReplaceAllStringFunc(input, func(match string) string {
 		subMatch := re.FindStringSubmatch(match)[1]
 		attrs := strings.Split(subMatch, ";")
+		imgSrc := make(map[string]string)
+		imgSrc["add"] = "https://upload.wikimedia.org/wikipedia/commons/0/0e/Add_user_icon_%28blue%29.svg"
+		imgSrc["delete"] = "https://icons.iconarchive.com/icons/visualpharm/must-have/256/Remove-icon.png"
 		if len(attrs) == 1 {
 			className := subMatch
-			return fmt.Sprintf(`<img class='%s' type="image" hx-trigger="click" hx-target="#customer-selection" hx-get="/customer/select?p=%s" data-bs-toggle="modal" data-bs-target="#customer-selection" src="https://upload.wikimedia.org/wikipedia/commons/0/0e/Add_user_icon_%%28blue%%29.svg" style="cursor: pointer; width: 2%%; height: 2%%"; ></img>`, className, className[len(className)-1:])
+			return fmt.Sprintf(`<img id='%s' type="image" hx-trigger="click" hx-target="#customer-selection" hx-get="/customer/select?p=%s" data-bs-toggle="modal" data-bs-target="#customer-selection" src="%s" style="cursor: pointer; width: 2%%; height: 2%%"; ></img>`, className, className[len(className)-1:], imgSrc[className[:len(className)-1]])
 		} else {
 			className := attrs[0]
 			hiddenAttr := attrs[1]
-			return fmt.Sprintf(`<img class='%s' %s type="image" hx-trigger="click" hx-target="#customer-selection" hx-get="/customer/select?p=%s" data-bs-toggle="modal" data-bs-target="#customer-selection" src="https://upload.wikimedia.org/wikipedia/commons/0/0e/Add_user_icon_%%28blue%%29.svg" style="cursor: pointer; width: 2%%; height: 2%%";></img>`, className, hiddenAttr, className[len(className)-1:])
+			return fmt.Sprintf(`<img id='%s' %s type="image" src="%s" onClick=clearCustomer(%s) style="cursor: pointer; width: 2%%; height: 2%%";></img>`, className, hiddenAttr, imgSrc[className[:len(className)-1]], className[len(className)-1:])
 		}
 	})
 }
@@ -105,7 +108,7 @@ func main() {
 		DBName:   os.Getenv("POSTGRES_CUSTOMER_SERVER_DB_NAME"),
 	}
 
-	res, err := docconv.ConvertPath("Acto de Venta Alfredo Mateo4.docx")
+	res, err := docconv.ConvertPath("Acto de Venta Alfredo Mateo5.docx")
 	if err != nil {
 		log.Fatal(err.Error())
 	}
