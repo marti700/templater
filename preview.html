@@ -10,12 +10,16 @@
 </head>
 
 <body>
-
+<form method="POST" action="/document/template/upload" enctype="multipart/form-data">
+  <input type="file" id="myFile" name="template">
+  <input type="submit">
+</form>
     <div id="container-form">
         <img id="insert-x" type="image" hx-trigger="click" hx-target="#customer-selection" hx-get="/customer/select"
             data-bs-toggle="modal" data-bs-target="#customer-selection"
             src="https://upload.wikimedia.org/wikipedia/commons/0/0e/Add_user_icon_%28blue%29.svg"
             style="cursor: pointer; width: 2%; height: 2%;" />
+        <button></button>
         <form id="document-form">
             <div id="document-container" style="text-align: justify; width: 50%; margin: auto;">
                 {{.Document}}

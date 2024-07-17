@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -169,6 +170,56 @@ func main() {
 
 		file.ReplaceAll(placeholders)
 		file.WriteToFile("substitution.docx")
+	})
+
+	http.HandleFunc("/document/template/upload", func(w http.ResponseWriter, r *http.Request) {
+		err := r.ParseMultipartForm(10 << 20)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+
+		}
+		documentFile, header, err := r.FormFile("template")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		defer documentFile.Close()
+		fileName := header.Filename
+		filePath := "./" + fileName
+
+		// key, ok := r.URL.Query()["kind"]
+
+		// if ok {
+		// 	d.Kind = string(key[0])
+		// } else {
+		// 	http.Error(w, "kind uri parameter must be specified", http.StatusInternalServerError)
+		// 	return
+		// }
+
+		dst, err := os.Create(filePath)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		defer dst.Close()
+
+		if _, err := io.Copy(dst, documentFile); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// docID, err := saveDocMetadata(d)
+		// if err != nil {
+		// 	http.Error(w, err.Error(), http.StatusInternalServerError)
+		// 	return
+		// }
+
+		// if docID {
+		// 	w.Write(utils.ToJsonBytes(docID))
+		// }
+		w.WriteHeader(http.StatusOK)
 	})
 
 	fmt.Println("Executing server...")
