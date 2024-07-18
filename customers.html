@@ -43,9 +43,9 @@
 </head>
 
 <body>
-    <div id="page" class="container">
+    <div class="container">
         <div id="buttons">
-            <button hx-get="/customer/newCustomer" hx-target="#page" hx-swap="outterHTML">Agregar</button>
+            <button hx-get="/customer/newCustomer" hx-target="#page">Agregar</button>
             <button>Editar</button>
         </div>
 
@@ -72,7 +72,7 @@
                         <td>{{.Nationality}}</td>
                         <td>{{.Ocupation}}</td>
                         <td>{{.CivilStatus}}</td>
-                        <td><button hx-get="/customer?id={{.ID}}" hx-target="#page" hx-swap="outterHTML">Ver</button>
+                        <td><button hx-get="/customer?id={{.ID}}" hx-target="#page">Ver</button>
                         </td>
                     </tr>
                     {{end}}
@@ -84,11 +84,7 @@
         <!-- <script src="https://cdn.jsdelivr.net/npm/gridjs/dist/gridjs.umd.js"></script> -->
         <script src="https://cdn.jsdelivr.net/npm/gridjs@5.1.0/dist/gridjs.umd.js"></script>
 
-        <script src="https://unpkg.com/htmx.org@1.9.8"
-            integrity="sha384-rgjA7mptc2ETQqXoYC3/zJvkU7K/aP44Y+z7xQuJiVnB/422P/Ak+F/AqFR7E4Wr"
-            crossorigin="anonymous"></script>
         <script>
-
             if (typeof customerTable == 'undefined') {
                 const customerTable = document.getElementById("customer-table");
 
@@ -98,16 +94,8 @@
                 });
             }
 
-
             grid.on('ready', function () { console.log("bien!!!"); htmx.process(document.getElementById("customers")) });
             grid.render(document.getElementById("customers"));
-            // document.addEventListener("DOMContentLoaded", () => {
-            //     console.log("Hello World!");
-            //     htmx.process(document.body);
-            // });
-            // setTimeout(() => {
-            //     htmx.process(document.body);
-            // }, 600);
         </script>
     </div>
 </body>

@@ -49,7 +49,7 @@
         <!-- </div> -->
 
         <div id="customer-data">
-            <form id="customer-form" hx-post="/customers" hx-target="#newcustomer" hx-swap="outerHTML">
+            <form id="customer-form" hx-post="/customers" hx-target="#newcustomer">
                 <div id="cus-data">
                     <label for="id">Documento: </label>
                     <input type="text" id="id" name="id" placeholder="Cedula"><br />
@@ -93,15 +93,15 @@
                 <br />
                 <div>
                     <button id="submit">Aceptar</button>
-                    <button id="cancel" hx-get="/customers" hx-target="#page" hx-swap="outerHTML">Cancelar</button>
+                    <button id="cancel" hx-get="/customers" hx-target="#page">Cancelar</button>
                 </div>
             </form>
         </div>
     </div>
-    <script src="https://unpkg.com/htmx.org@1.9.8"
+    <!-- <script src="https://unpkg.com/htmx.org@1.9.8"
         integrity="sha384-rgjA7mptc2ETQqXoYC3/zJvkU7K/aP44Y+z7xQuJiVnB/422P/Ak+F/AqFR7E4Wr"
         crossorigin="anonymous"></script>
-
+ -->
 </body>
 
 </html>

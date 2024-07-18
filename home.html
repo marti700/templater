@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Navigation</title>
+    <style>
+        .App {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .center {
+            display: flex;
+            justify-content: space-around;
+            /* Center the links horizontally */
+        }
+
+        .nav-link {
+            padding: 5px;
+        }
+
+        .nav-link img {
+            width: 15vw;
+            height: 15vh;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="page" class="App">
+        <div class="center">
+            <a class="nav-link" hx-get="/customers" hx-trigger="click" hx-target="#page">
+                <img src="https://icons.iconarchive.com/icons/antialiasfactory/jewelry/256/Files-Folder-icon.png"
+                    alt="Files">
+            </a>
+
+            <a class="nav-link" hx-get="/customers" hx-trigger="click" hx-target="#page">
+                <img src="https://iconarchive.com/download/i47222/icons-land/vista-people/Office-Customer-Male-Light.ico"
+                    alt="Customers">
+            </a>
+
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/gridjs@5.1.0/dist/gridjs.umd.js"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.8"
+        integrity="sha384-rgjA7mptc2ETQqXoYC3/zJvkU7K/aP44Y+z7xQuJiVnB/422P/Ak+F/AqFR7E4Wr"
+        crossorigin="anonymous"></script>
+
+
+</body>
+
+</html>

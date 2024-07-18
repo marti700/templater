@@ -222,6 +222,15 @@ func main() {
 		w.WriteHeader(http.StatusOK)
 	})
 
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		tmpl := template.Must(template.ParseFiles("./home.html"))
+		err := tmpl.Execute(w, nil)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+		// w.WriteHeader(http.StatusOK)
+	})
+
 	fmt.Println("Executing server...")
 	err = http.ListenAndServe(":9090", nil)
 	if err != nil {
