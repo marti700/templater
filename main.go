@@ -172,6 +172,19 @@ func main() {
 		file.WriteToFile("substitution.docx")
 	})
 
+	templateNames := func() ([]string, error) {
+		fls, err := os.ReadDir("./tmpls/")
+		if err != nil {
+			return nil, err
+		}
+		fileNames := make([]string, len(fls))
+		for i, fn := range fls {
+			fileNames[i] = fn.Name()
+		}
+
+		return fileNames, nil
+	}
+
 	http.HandleFunc("/document/template/upload", func(w http.ResponseWriter, r *http.Request) {
 		err := r.ParseMultipartForm(10 << 20)
 		if err != nil {
@@ -187,16 +200,7 @@ func main() {
 
 		defer documentFile.Close()
 		fileName := header.Filename
-		filePath := "./" + fileName
-
-		// key, ok := r.URL.Query()["kind"]
-
-		// if ok {
-		// 	d.Kind = string(key[0])
-		// } else {
-		// 	http.Error(w, "kind uri parameter must be specified", http.StatusInternalServerError)
-		// 	return
-		// }
+		filePath := "./tmpls/" + fileName
 
 		dst, err := os.Create(filePath)
 		if err != nil {
@@ -210,16 +214,34 @@ func main() {
 			return
 		}
 
-		// docID, err := saveDocMetadata(d)
-		// if err != nil {
-		// 	http.Error(w, err.Error(), http.StatusInternalServerError)
-		// 	return
-		// }
+		fileNames, err := templateNames()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
-		// if docID {
-		// 	w.Write(utils.ToJsonBytes(docID))
-		// }
-		w.WriteHeader(http.StatusOK)
+		w.Header().Set("Content-Type", "text/html")
+		tmpl := template.Must(template.ParseFiles("./templates.html"))
+		err = tmpl.Execute(w, fileNames)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	})
+
+	http.HandleFunc("/document/templates", func(w http.ResponseWriter, r *http.Request) {
+		fileNames, err := templateNames()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		tmpl := template.Must(template.ParseFiles("./templates.html"))
+		err = tmpl.Execute(w, fileNames)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	})
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -227,6 +249,7 @@ func main() {
 		err := tmpl.Execute(w, nil)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 		// w.WriteHeader(http.StatusOK)
 	})

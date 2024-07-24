@@ -1,0 +1,38 @@
+<form method="POST" action="/document/template/upload" enctype="multipart/form-data">
+    <input type="file" id="myFile" name="template">
+    <input type="submit">
+</form>
+
+<div class="container" id="see">
+    <div id="table">
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                </tr>
+            </thead>
+            {{range .}}
+            <tr>
+                <td>{{.}}</td>
+            </tr>
+            {{end}}
+        </table>
+    </div>
+    <div id="tables"></div>
+</div>
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/gridjs@5.1.0/dist/gridjs.umd.js"></script> -->
+
+<script>
+    if (typeof customerTable == 'undefined') {
+        const customerTable = document.getElementById("table");
+
+        var grid = new gridjs.Grid({
+            from: customerTable,
+            search: true,
+        });
+    }
+
+    grid.on('ready', function () { console.log("bien!!!"); });
+    grid.render(document.getElementById("tables"));
+</script>

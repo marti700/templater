@@ -1,57 +1,12 @@
-<!DOCTYPE html>
-<html>
-
-<head>
-    <title>El asunto punto com </title>
-    <link href="https://cdn.jsdelivr.net/npm/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" />
-    <style>
-        .container {
-            display: grid;
-            grid-template-columns: repeat(6, 1fr);
-            grid-template-rows: repeat(3, 0.2fr);
-        }
-
-        #buttons {
-            grid-area: 1/2/1/7;
-        }
-
-        #customers {
-            grid-area: 2/2/3/7;
-        }
-
-        #cus-data {
-            display: grid;
-            grid-template-columns: 33% 33% 33%;
-        }
-
-        .col1 {
-            width: 50%;
-        }
-
-        .col2 {
-            width: 50%;
-        }
-
-        #documents {
-            grid-area: 3/2/4/6;
-        }
-
-        #page {
-            transition: all ease-in 2s;
-        }
-    </style>
-</head>
-
-<body>
-    <div class="container">
+<div class="container">
+    <div id="control" style="height: 30%;">
         <div id="buttons">
             <button hx-get="/customer/newCustomer" hx-target="#page">Agregar</button>
-            <button>Editar</button>
         </div>
 
-        <div>
-            <h1>Customers</h1>
-            <table id="customer-table">
+        <h1>Customers</h1>
+        <div id="customer-table">
+            <table>
                 <thead>
                     <tr>
                         <th>Name</th>
@@ -79,25 +34,30 @@
                 </tbody>
             </table>
         </div>
-        <div id="customers"></div>
-        <div id="aqui"></div>
-        <!-- <script src="https://cdn.jsdelivr.net/npm/gridjs/dist/gridjs.umd.js"></script> -->
-        <script src="https://cdn.jsdelivr.net/npm/gridjs@5.1.0/dist/gridjs.umd.js"></script>
-
-        <script>
-            if (typeof customerTable == 'undefined') {
-                const customerTable = document.getElementById("customer-table");
-
-                var grid = new gridjs.Grid({
-                    from: customerTable,
-                    search: true,
-                });
-            }
-
-            grid.on('ready', function () { console.log("bien!!!"); htmx.process(document.getElementById("customers")) });
-            grid.render(document.getElementById("customers"));
-        </script>
     </div>
-</body>
+    <div id="customers" style="height: 70%; overflow: auto;"></div>
+</div>
+<div id="scripts">
+    <!-- <script src="https://cdn.jsdelivr.net/npm/gridjs/dist/gridjs.umd.js"></script> -->
+    <script src="https://cdn.jsdelivr.net/npm/gridjs@5.1.0/dist/gridjs.umd.js"></script>
 
-</html>
+    <script>
+        if (typeof customerTable == 'undefined') {
+            const customerTable = document.getElementById("customer-table");
+
+            var grid = new gridjs.Grid({
+                from: customerTable,
+                search: true,
+                style: {
+                    table: {
+                        'text-align': 'right',
+                        'word-break': 'break-word'
+                    }
+                }
+            });
+        }
+
+        grid.on('ready', function () { console.log("bien!!!"); htmx.process(document.getElementById("customers")) });
+        grid.render(document.getElementById("customers"));
+    </script>
+</div>

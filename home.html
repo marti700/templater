@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Navigation</title>
+    <link href="https://cdn.jsdelivr.net/npm/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" />
+    <title>Templater</title>
     <style>
         .App {
             position: absolute;
@@ -31,9 +32,9 @@
 </head>
 
 <body>
-    <div id="page" class="App">
+    <div id="page" class="App" style="width: 100%; height: 100%;">
         <div class="center">
-            <a class="nav-link" hx-get="/customers" hx-trigger="click" hx-target="#page">
+            <a class="nav-link" hx-get="/document/templates" hx-trigger="click" hx-target="#page">
                 <img src="https://icons.iconarchive.com/icons/antialiasfactory/jewelry/256/Files-Folder-icon.png"
                     alt="Files">
             </a>
