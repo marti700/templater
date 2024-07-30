@@ -2,6 +2,8 @@
     <div id="control" style="height: 30%;">
         <div id="buttons">
             <button hx-get="/customer/newCustomer" hx-target="#page">Agregar</button>
+            <button type="button" hx-get="/document/new" hx-target="#document-selection" hx-trigger="click"
+                data-bs-toggle="modal" , data-bs-target="#document-selection">Nuevo Documento</button>
         </div>
 
         <h1>Customers</h1>
@@ -36,28 +38,30 @@
         </div>
     </div>
     <div id="customers" style="height: 70%; overflow: auto;"></div>
+
+
 </div>
-<div id="scripts">
-    <!-- <script src="https://cdn.jsdelivr.net/npm/gridjs/dist/gridjs.umd.js"></script> -->
-    <script src="https://cdn.jsdelivr.net/npm/gridjs@5.1.0/dist/gridjs.umd.js"></script>
+<div id="document-selection" class="modal modal-blur" style="display: none" aria-hidden="false" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content"></div>
+    </div>
+</div>
+<script>
+    if (typeof customerTable == 'undefined') {
+        const customerTable = document.getElementById("customer-table");
 
-    <script>
-        if (typeof customerTable == 'undefined') {
-            const customerTable = document.getElementById("customer-table");
-
-            var grid = new gridjs.Grid({
-                from: customerTable,
-                search: true,
-                style: {
-                    table: {
-                        'text-align': 'right',
-                        'word-break': 'break-word'
-                    }
+        var grid = new gridjs.Grid({
+            from: customerTable,
+            search: true,
+            style: {
+                table: {
+                    'text-align': 'right',
+                    'word-break': 'break-word'
                 }
-            });
-        }
+            }
+        });
+    }
 
-        grid.on('ready', function () { console.log("bien!!!"); htmx.process(document.getElementById("customers")) });
-        grid.render(document.getElementById("customers"));
-    </script>
-</div>
+    grid.on('ready', function () { console.log("bien!!!"); htmx.process(document.getElementById("customers")) });
+    grid.render(document.getElementById("customers"));
+</script>

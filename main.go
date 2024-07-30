@@ -244,6 +244,21 @@ func main() {
 		}
 	})
 
+	http.HandleFunc("/document/new", func(w http.ResponseWriter, r *http.Request) {
+		fileNames, err := templateNames()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		tmpl := template.Must(template.ParseFiles("./document-selection.html"))
+		err = tmpl.Execute(w, fileNames)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	})
+
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		tmpl := template.Must(template.ParseFiles("./home.html"))
 		err := tmpl.Execute(w, nil)

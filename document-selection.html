@@ -1,0 +1,49 @@
+<div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title">Selecciona una plantilla</h5>
+        </div>
+        <div class="modal-body">
+            <div id="select-document" class="container">
+                <div>
+                    <table id="documents-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Accion</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{range .}}
+                            <tr>
+                                <td>{{.}}</td>
+                                <td>
+                                    <button type="button" hx-get="/document" hx-target="#page" data-bs-dismiss="modal">Abrir</button>
+                                </td>
+                            </tr>
+                            {{end}}
+                        </tbody>
+                    </table>
+                </div>
+                <div id="documents"></div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    setTimeout(function () {
+        const documentsTable = document.getElementById("documents-table");
+        var grid = new gridjs.Grid({
+            from: documentsTable,
+            search: true,
+        });
+        grid.on('ready', function () { console.log("bien!!!"); htmx.process(document.getElementById("documents")) });
+        grid.render(document.getElementById("documents"));
+    }, 1);
+
+
+</script>
