@@ -18,7 +18,7 @@
                             <tr>
                                 <td>{{.}}</td>
                                 <td>
-                                    <button type="button" hx-get="/document" hx-target="#page" data-bs-dismiss="modal">Abrir</button>
+                                    <button type="button" hx-get="/document?template={{.}}" hx-target="#page" data-bs-dismiss="modal">Abrir</button>
                                 </td>
                             </tr>
                             {{end}}

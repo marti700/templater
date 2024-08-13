@@ -17,6 +17,7 @@ import (
 // //////
 type DocMetadata struct {
 	Document string
+	Template string
 }
 
 func replaceInputPlaceholders(input string) string {
@@ -99,60 +100,52 @@ func stringStringToIntfMap(strMap map[string][]string) map[string]interface{} {
 	return intfMap
 }
 
-/////
+func DocumentPreview(templatesFolderPath string, viewTemplatesPath string) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		templateName := r.URL.Query()["template"][0]
+		res, err := docconv.ConvertPath(templatesFolderPath + templateName)
+		if err != nil {
+			// log.Fatal(err.Error())
+			fmt.Println(err.Error())
+		}
+		fmt.Println(res.Body)
 
-func DocumentPreview(w http.ResponseWriter, r *http.Request) {
-	res, err := docconv.ConvertPath("Acto de Venta Alfredo Mateo5.docx")
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-	fmt.Println(res.Body)
+		additionalAttributes := `type="image" hx-trigger="click" hx-target="#customer-selection" hx-get="/customer/select" data-bs-toggle="modal" data-bs-target="#customer-selection" src="https://upload.wikimedia.org/wikipedia/commons/0/0e/Add_user_icon_%28blue%29.svg" style="cursor: pointer; width: 2%; height: 2%;"`
+		metadata := DocMetadata{
+			Document: replaceEmptyLines(replaceImgPlaceHolders(replaceDropdownPlaceholders(replaceInputPlaceholders(res.Body)), additionalAttributes)),
+			Template: templateName,
+		}
 
-	additionalAttributes := `type="image" hx-trigger="click" hx-target="#customer-selection" hx-get="/customer/select" data-bs-toggle="modal" data-bs-target="#customer-selection" src="https://upload.wikimedia.org/wikipedia/commons/0/0e/Add_user_icon_%28blue%29.svg" style="cursor: pointer; width: 2%; height: 2%;"`
-	metadata := DocMetadata{
-		Document: replaceEmptyLines(replaceImgPlaceHolders(replaceDropdownPlaceholders(replaceInputPlaceholders(res.Body)), additionalAttributes)),
-	}
-
-	tmpl := template.Must(template.ParseFiles("preview.html"))
-	err = tmpl.Execute(w, metadata)
-	if err != nil {
-		log.Fatal(err.Error())
+		tmpl := template.Must(template.ParseFiles(viewTemplatesPath))
+		err = tmpl.Execute(w, metadata)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
 	}
 }
 
-// func DocumentUpdate(dbConf conf.DBConfig) func(http.ResponseWriter, *http.Request) {
-// 	return func(w http.ResponseWriter, r *http.Request) {
-// 		fmt.Println("Tamo aqui")
-// 		cusID := r.URL.Query()["id"][0]
-// 		c, _ := customer.FindCustomerById(dbConf, cusID)
-// 		fmt.Println(c)
-// 		// tmpl := template.Must(template.ParseFiles("preview.html"))
-// 		// err := tmpl.Execute(w, metadata)
-// 		// if err != nil {
-// 		// 	log.Fatal(err.Error())
-// 		// }
-// 		// w.Write([]byte(res.Body))
-// 	}
-// }
+func CreteDocument(templateFolderPath string) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
 
-func CreteDocument(w http.ResponseWriter, r *http.Request) {
-	err := r.ParseForm()
-	if err != nil {
-		errMsg := []byte("Error parsing form")
-		w.Write(errMsg)
+		templateName := r.URL.Query()["template"][0]
+		err := r.ParseForm()
+		if err != nil {
+			errMsg := []byte("Error parsing form")
+			w.Write(errMsg)
+		}
+		f := r.Form
+		file, err := docx.Open(templateFolderPath + templateName)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+
+		defer file.Close()
+
+		placeholders := stringStringToIntfMap(f)
+
+		file.ReplaceAll(placeholders)
+		file.WriteToFile("substitution.docx")
 	}
-	f := r.Form
-	file, err := docx.Open("Acto de Venta Alfredo Mateo.docx")
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-
-	defer file.Close()
-
-	placeholders := stringStringToIntfMap(f)
-
-	file.ReplaceAll(placeholders)
-	file.WriteToFile("substitution.docx")
 }
 
 func templateNames() ([]string, error) {
@@ -168,47 +161,49 @@ func templateNames() ([]string, error) {
 	return fileNames, nil
 }
 
-func Upoloadtemplate(w http.ResponseWriter, r *http.Request) {
-	err := r.ParseMultipartForm(10 << 20)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+func Uploadtemplate(templatesPath string) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		err := r.ParseMultipartForm(10 << 20)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 
-	}
-	documentFile, header, err := r.FormFile("template")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+		}
+		documentFile, header, err := r.FormFile("template")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
-	defer documentFile.Close()
-	fileName := header.Filename
-	filePath := "./tmpls/" + fileName
+		defer documentFile.Close()
+		fileName := header.Filename
+		filePath := templatesPath + fileName
 
-	dst, err := os.Create(filePath)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	defer dst.Close()
+		dst, err := os.Create(filePath)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		defer dst.Close()
 
-	if _, err := io.Copy(dst, documentFile); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+		if _, err := io.Copy(dst, documentFile); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
-	fileNames, err := templateNames()
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+		fileNames, err := templateNames()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
-	w.Header().Set("Content-Type", "text/html")
-	tmpl := template.Must(template.ParseFiles("./templates.html"))
-	err = tmpl.Execute(w, fileNames)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		w.Header().Set("Content-Type", "text/html")
+		tmpl := template.Must(template.ParseFiles("./templates.html"))
+		err = tmpl.Execute(w, fileNames)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 }
 
