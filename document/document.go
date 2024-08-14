@@ -108,7 +108,7 @@ func DocumentPreview(templatesFolderPath string, viewTemplatesPath string) func(
 			// log.Fatal(err.Error())
 			fmt.Println(err.Error())
 		}
-		fmt.Println(res.Body)
+		// fmt.Println(res.Body)
 
 		additionalAttributes := `type="image" hx-trigger="click" hx-target="#customer-selection" hx-get="/customer/select" data-bs-toggle="modal" data-bs-target="#customer-selection" src="https://upload.wikimedia.org/wikipedia/commons/0/0e/Add_user_icon_%28blue%29.svg" style="cursor: pointer; width: 2%; height: 2%;"`
 		metadata := DocMetadata{
@@ -126,7 +126,6 @@ func DocumentPreview(templatesFolderPath string, viewTemplatesPath string) func(
 
 func CreteDocument(templateFolderPath string) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-
 		templateName := r.URL.Query()["template"][0]
 		err := r.ParseForm()
 		if err != nil {
@@ -148,8 +147,8 @@ func CreteDocument(templateFolderPath string) func(http.ResponseWriter, *http.Re
 	}
 }
 
-func templateNames() ([]string, error) {
-	fls, err := os.ReadDir("./tmpls/")
+func templateNames(templatesPath string) ([]string, error) {
+	fls, err := os.ReadDir(templatesPath)
 	if err != nil {
 		return nil, err
 	}
@@ -161,7 +160,7 @@ func templateNames() ([]string, error) {
 	return fileNames, nil
 }
 
-func Uploadtemplate(templatesPath string) func(http.ResponseWriter, *http.Request) {
+func Uploadtemplate(templatesFolderPath, templatePath string) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		err := r.ParseMultipartForm(10 << 20)
 		if err != nil {
@@ -177,7 +176,7 @@ func Uploadtemplate(templatesPath string) func(http.ResponseWriter, *http.Reques
 
 		defer documentFile.Close()
 		fileName := header.Filename
-		filePath := templatesPath + fileName
+		filePath := templatesFolderPath + fileName
 
 		dst, err := os.Create(filePath)
 		if err != nil {
@@ -191,14 +190,14 @@ func Uploadtemplate(templatesPath string) func(http.ResponseWriter, *http.Reques
 			return
 		}
 
-		fileNames, err := templateNames()
+		fileNames, err := templateNames(templatesFolderPath)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		w.Header().Set("Content-Type", "text/html")
-		tmpl := template.Must(template.ParseFiles("./templates.html"))
+		tmpl := template.Must(template.ParseFiles(templatePath))
 		err = tmpl.Execute(w, fileNames)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -207,32 +206,36 @@ func Uploadtemplate(templatesPath string) func(http.ResponseWriter, *http.Reques
 	}
 }
 
-func GetTemplatesList(w http.ResponseWriter, r *http.Request) {
-	fileNames, err := templateNames()
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+func GetTemplatesList(templatesFolderPath, templatePath string) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		fileNames, err := templateNames(templatesFolderPath)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
-	tmpl := template.Must(template.ParseFiles("./templates.html"))
-	err = tmpl.Execute(w, fileNames)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		tmpl := template.Must(template.ParseFiles(templatePath))
+		err = tmpl.Execute(w, fileNames)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 }
 
-func NewDocument(w http.ResponseWriter, r *http.Request) {
-	fileNames, err := templateNames()
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+func NewDocument(templatesFolderPath, templatePath string) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		fileNames, err := templateNames(templatesFolderPath)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
-	tmpl := template.Must(template.ParseFiles("./document-selection.html"))
-	err = tmpl.Execute(w, fileNames)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		tmpl := template.Must(template.ParseFiles("./document-selection.html"))
+		err = tmpl.Execute(w, fileNames)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 }

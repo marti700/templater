@@ -31,9 +31,9 @@ func main() {
 	// Document routes
 	http.HandleFunc("/document", document.DocumentPreview("./tmpls/", "./preview.html"))
 	http.HandleFunc("/document/create", document.CreteDocument("./tmpls/"))
-	http.HandleFunc("/document/template/upload", document.Uploadtemplate("./tmpls/"))
-	http.HandleFunc("/document/templates", document.GetTemplatesList)
-	http.HandleFunc("/document/new", document.NewDocument)
+	http.HandleFunc("/document/template/upload", document.Uploadtemplate("./tmpls/", "./templates.html"))
+	http.HandleFunc("/document/templates", document.GetTemplatesList("./tmpls/", "./templates.html"))
+	http.HandleFunc("/document/new", document.NewDocument("./tmpls/", "./document-selection.html"))
 
 	// main page
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
