@@ -1,0 +1,133 @@
+<div class="container">
+    <div id="control" style="height: 30%;">
+        <div id="buttons">
+            <button hx-get="/customer/newCustomer" hx-target="#page">Agregar</button>
+            <button type="button" hx-get="/document/new" hx-target="#document-selection" hx-trigger="click"
+                data-bs-toggle="modal" , data-bs-target="#document-selection">Nuevo Documento</button>
+        </div>
+
+        <h1>Customers</h1>
+        <div id="customer-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Last Name</th>
+                        <th>Address</th>
+                        <th>Nationality</th>
+                        <th>Occupation</th>
+                        <th>Civil Status</th>
+                        <th>Accion</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                    <tr>
+                        <td>John Doe</td>
+                        <td>123 Main Street</td>
+                        <td>USA</td>
+                        <td>American</td>
+                        <td>Software Engineer</td>
+                        <td>Single</td>
+                        <td><button hx-get="/customer?id=1234567890" hx-target="#page">Ver</button>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>Jane Doe</td>
+                        <td>456 Elm Street</td>
+                        <td>Canada</td>
+                        <td>Canadian</td>
+                        <td>Doctor</td>
+                        <td>Married</td>
+                        <td><button hx-get="/customer?id=9876543210" hx-target="#page">Ver</button>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>Peter Parker</td>
+                        <td>789 Oak Street</td>
+                        <td>UK</td>
+                        <td>British</td>
+                        <td>Web Developer</td>
+                        <td>Divorced</td>
+                        <td><button hx-get="/customer?id=0987654321" hx-target="#page">Ver</button>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>Mary Jane Watson</td>
+                        <td>1011 Maple Street</td>
+                        <td>USA</td>
+                        <td>American</td>
+                        <td>Journalist</td>
+                        <td>Widowed</td>
+                        <td><button hx-get="/customer?id=3210987654" hx-target="#page">Ver</button>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>Bruce Wayne</td>
+                        <td>1213 Gotham Street</td>
+                        <td>USA</td>
+                        <td>American</td>
+                        <td>CEO</td>
+                        <td>Single</td>
+                        <td><button hx-get="/customer?id=4321098765" hx-target="#page">Ver</button>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>Clark Kent</td>
+                        <td>1415 Metropolis Street</td>
+                        <td>USA</td>
+                        <td>American</td>
+                        <td>Reporter</td>
+                        <td>Married</td>
+                        <td><button hx-get="/customer?id=5432109876" hx-target="#page">Ver</button>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>Diana Prince</td>
+                        <td>1617 Themyscira Street</td>
+                        <td>Themyscira</td>
+                        <td>Amazonian</td>
+                        <td>Princess</td>
+                        <td>Single</td>
+                        <td><button hx-get="/customer?id=6543210987" hx-target="#page">Ver</button>
+                        </td>
+                    </tr>
+                    
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div id="customers" style="height: 70%; overflow: auto;"></div>
+
+
+</div>
+<div id="document-selection" class="modal modal-blur" style="display: none" aria-hidden="false" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content"></div>
+    </div>
+</div>
+<script>
+    if (typeof customerTable == 'undefined') {
+        const customerTable = document.getElementById("customer-table");
+
+        var grid = new gridjs.Grid({
+            from: customerTable,
+            search: true,
+            style: {
+                table: {
+                    'text-align': 'right',
+                    'word-break': 'break-word'
+                }
+            }
+        });
+    }
+
+    grid.on('ready', function () { console.log("bien!!!"); htmx.process(document.getElementById("customers")) });
+    grid.render(document.getElementById("customers"));
+</script>

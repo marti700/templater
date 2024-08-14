@@ -1,0 +1,100 @@
+<div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title">Selecciona un cliente</h5>
+        </div>
+        <div class="modal-body">
+            <div id="select-customer" class="container">
+                <div>
+                    <table id="customer-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Last Name</th>
+                                <th>Accion</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            
+                            <tr>
+                                <td>John Doe</td>
+                                <td>123 Main Street</td>
+                                <td>
+                                    <button type="button" data-bs-dismiss="modal" onclick="fillCustomer('John Doe', 'American', 'Single','Software Engineer', 'C', '1234567890', 'USA', '1') ">Select</button>
+                                </td>
+                            </tr>
+                            
+                            <tr>
+                                <td>Jane Doe</td>
+                                <td>456 Elm Street</td>
+                                <td>
+                                    <button type="button" data-bs-dismiss="modal" onclick="fillCustomer('Jane Doe', 'Canadian', 'Married','Doctor', 'P', '9876543210', 'Canada', '1') ">Select</button>
+                                </td>
+                            </tr>
+                            
+                            <tr>
+                                <td>Peter Parker</td>
+                                <td>789 Oak Street</td>
+                                <td>
+                                    <button type="button" data-bs-dismiss="modal" onclick="fillCustomer('Peter Parker', 'British', 'Divorced','Web Developer', 'O', '0987654321', 'UK', '1') ">Select</button>
+                                </td>
+                            </tr>
+                            
+                            <tr>
+                                <td>Mary Jane Watson</td>
+                                <td>1011 Maple Street</td>
+                                <td>
+                                    <button type="button" data-bs-dismiss="modal" onclick="fillCustomer('Mary Jane Watson', 'American', 'Widowed','Journalist', 'C', '3210987654', 'USA', '1') ">Select</button>
+                                </td>
+                            </tr>
+                            
+                            <tr>
+                                <td>Bruce Wayne</td>
+                                <td>1213 Gotham Street</td>
+                                <td>
+                                    <button type="button" data-bs-dismiss="modal" onclick="fillCustomer('Bruce Wayne', 'American', 'Single','CEO', 'P', '4321098765', 'USA', '1') ">Select</button>
+                                </td>
+                            </tr>
+                            
+                            <tr>
+                                <td>Clark Kent</td>
+                                <td>1415 Metropolis Street</td>
+                                <td>
+                                    <button type="button" data-bs-dismiss="modal" onclick="fillCustomer('Clark Kent', 'American', 'Married','Reporter', 'O', '5432109876', 'USA', '1') ">Select</button>
+                                </td>
+                            </tr>
+                            
+                            <tr>
+                                <td>Diana Prince</td>
+                                <td>1617 Themyscira Street</td>
+                                <td>
+                                    <button type="button" data-bs-dismiss="modal" onclick="fillCustomer('Diana Prince', 'Amazonian', 'Single','Princess', 'C', '6543210987', 'Themyscira', '1') ">Select</button>
+                                </td>
+                            </tr>
+                            
+                        </tbody>
+                    </table>
+                </div>
+                <div id="customers"></div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/gridjs@5.1.0/dist/gridjs.umd.js"></script>
+<script>
+    setTimeout(function () {
+        const customerTable = document.getElementById("customer-table");
+        var grid = new gridjs.Grid({
+            from: customerTable,
+            search: true,
+        });
+        grid.on('ready', function () { console.log("bien!!!"); htmx.process(document.getElementById("customers")) });
+        grid.render(document.getElementById("customers"));
+    }, 1);
+
+
+</script>

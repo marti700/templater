@@ -1,0 +1,49 @@
+<div class="container" id="edit">
+    <div id="cus-data">
+        <form id="customer-form" hx-put="/customer?id=1234567890" hx-target="#edit">
+            <label for="id">Documento: </label>
+            <input type="text" id="id" name="id" value="1234567890"><br />
+
+            <label for="documentType">Tipo de documento</label>
+            <select id="documentType" name="idType">
+                <option>Cedula</option>
+                <option>Passaporte</option>
+            </select><br />
+
+            <label for="name">Nombres: </label>
+            <input type="text" id="name" name="name" value="John Doe"><br />
+
+            <label for="lastname">Apellidos: </label>
+            <input type="text" id="lastname" name="lastname" value="123 Main Street"><br />
+
+            <label for="ocupation">Ocupacion: </label>
+            <input type="text" id="ocupation" name="ocupation" value="Software Engineer"><br />
+
+            <label for="nationality">Nacionalidad: </label>
+            <input type="text" id="nationality" name="nationality" value="American"><br />
+
+            <label for="gender">Genero:</label>
+            <select id="gender" name="civilStatus" value="male">
+                <option>Masculino</option>
+                <option>Femenino</option>
+            </select><br />
+            <label for="civilStatus">Estado Civil:</label>
+
+            <select id="civilStatus" name="civilStatus" placeholder="Single">
+                <option>Soltero</option>
+                <option>Casado</option>
+                <option>Divorciado</option>
+                <option>Viudo</option>
+            </select><br />
+
+            <label for="address">Direccion:</label>
+            <textarea id="address" name="address">USA</textarea><br />
+
+            <div>
+                <button id="submit">Aceptar</button>
+                <button id="cancel" hx-get="/customer?id=1234567890" hx-target="#page">Cancelar</button>
+            </div>
+
+        </form>
+    </div>
+</div>

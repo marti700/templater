@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>El asunto punto com </title>
+    <style>
+        .container {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            grid-template-rows: repeat(3, 0.5fr);
+        }
+
+        #buttons {
+            grid-area: 1/2/1/7;
+        }
+
+        #customer-data {
+            grid-area: 2/2/3/6;
+        }
+
+        #cus-data {
+            display: grid;
+            grid-template-columns: 33% 33% 33%;
+        }
+
+        .col1 {
+            width: 50%;
+        }
+
+        .col2 {
+            width: 50%;
+        }
+
+        #documents {
+            grid-area: 3/2/4/6;
+        }
+
+        #page {
+            transition: all ease-in 2s;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container" id="newcustomer">
+        
+        
+        
+        
+
+        <div id="customer-data">
+            <form id="customer-form" hx-post="/customers" hx-target="#newcustomer">
+                <div id="cus-data">
+                    <label for="id">Documento: </label>
+                    <input type="text" id="id" name="id" placeholder="Cedula"><br />
+
+                    <label for="documentType">Tipo de documento</label>
+                    <select id="documentType" name="idType" placeholder="tipo de documento">
+                        <option>Cedula</option>
+                        <option>Passaporte</option>
+                    </select><br />
+
+                    <label for="name">Nombres: </label>
+                    <input type="text" id="name" name="name" placeholder="Nombre"><br />
+
+                    <label for="lastname">Apellidos: </label>
+                    <input type="text" id="lastname" name="lastname" placeholder="Apellido"><br />
+
+                    <label for="ocupation">Ocupacion: </label>
+                    <input type="text" id="ocupation" name="ocupation" placeholder="Ocupacion"><br />
+
+                    <label for="nationality">Nacionalidad: </label>
+                    <input type="text" id="nationality" name="nationality" placeholder="Nacionalidad"><br />
+
+                    <label for="gender">Genero:</label>
+                    <select id="gender" name="civilStatus" placeholder="Genero">
+                        <option>Masculino</option>
+                        <option>Femenino</option>
+                    </select><br />
+
+                    <label for="civilStatus">Estado Civil:</label>
+                    <select id="civilStatus" name="civilStatus" placeholder="Estado Civil">
+                        <option>Soltero</option>
+                        <option>Casado</option>
+                        <option>Divorciado</option>
+                        <option>Viudo</option>
+                    </select><br />
+
+                    <label for="address">Direccion:</label>
+                    <textarea id="address" name="address" placeholder="Direccion"></textarea><br />
+
+                </div>
+                <br />
+                <div>
+                    <button id="submit">Aceptar</button>
+                    <button id="cancel" hx-get="/customers" hx-target="#page">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+</body>
+
+</html>
