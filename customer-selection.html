@@ -20,7 +20,8 @@
                                 <td>{{.Name}}</td>
                                 <td>{{.LastName}}</td>
                                 <td>
-                                    <button type="button" data-bs-dismiss="modal" onclick="fillCustomer('{{.Name}}', '{{.Nationality}}', '{{.CivilStatus}}','{{.Ocupation}}', '{{.IDType}}', '{{.ID}}', '{{.Address}}', '{{.PlaceInDoc}}') ">Select</button>
+                                    <!-- <button type="button" data-bs-dismiss="modal" onclick="fillCustomer('{{.Name}}', '{{.Nationality}}', '{{.CivilStatus}}','{{.Ocupation}}', '{{.IDType}}', '{{.ID}}', '{{.Address}}', '{{.PlaceInDoc}}') ">Select</button> -->
+                                    <button type="button" hx-swap="beforebegin" hx-target="#element-dummy" data-bs-dismiss="modal" hx-get="/wizard/customer/add?name={{.Name}}&nationality={{.Nationality}}&civilstatus={{.CivilStatus}}&ocupation={{.Ocupation}}&idtype={{.IDType}}&id={{.ID}}&address={{.Address}}&place={{.PlaceInDoc}}&lastname={{.LastName}}&gender={{.Gender}}">Select</button>
                                 </td>
                             </tr>
                             {{end}}

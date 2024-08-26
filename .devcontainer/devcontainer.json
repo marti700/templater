@@ -8,7 +8,8 @@
     "ghcr.io/devcontainers/features/go:1": {
       "version": "1.21"
     },
-    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    "ghcr.io/devcontainers/features/python:1": {}"
   },
   "containerEnv": {
     "POSTGRES_CUSTOMER_SERVER_USER_NAME": "postgres",

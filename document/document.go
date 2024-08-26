@@ -12,6 +12,7 @@ import (
 
 	"code.sajari.com/docconv/v2"
 	"github.com/lukasjarosch/go-docx"
+	"github.com/marti700/templater/customer"
 )
 
 // //////
@@ -237,5 +238,48 @@ func NewDocument(templatesFolderPath, templatePath string) func(http.ResponseWri
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+	}
+}
+
+func AddCustomer(w http.ResponseWriter, r *http.Request) {
+
+	query := r.URL.Query()
+	// params := make(map[string]string)
+
+	cus := customer.NewCustomerEntity(
+		query["id"][0],
+		query["idtype"][0],
+		query["name"][0],
+		query["lastname"][0],
+		query["address"][0],
+		query["nationality"][0],
+		query["ocupation"][0],
+		query["civilstatus"][0],
+		query["gender"][0],
+	)
+
+	// for key, values := range query {
+	// 	params[key] = values[0] // Assuming you only need the first value
+	// }
+
+	tmpl := template.Must(template.New("wizard-customer-select").Parse(
+		`<div id={{.ID}}>
+            <label>{{.Name}}</label>
+			<div hidden>
+				<input type="text" name="id" value="{{.ID}}"><br />
+				<input type="text" name="idType" value="{{.ID}}"><br />
+				<input type="text" name="name" value="{{.Name}}"><br />
+				<input type="text" name="lastname" value="{{.LastName}}"><br />
+				<input type="text" name="ocupation" value="{{.Ocupation}}"><br />
+				<input type="text" name="nationality" value="{{.Nationality}}"><br />
+				<input type="text" name="civilStatus" value="{{.CivilStatus}}"><br />
+				<input type="text" name="gender" value="{{.Gender}}">
+				<input type="text" name="address" value="{{.Address}}">
+			</div>
+		</div>`))
+	err := tmpl.Execute(w, cus)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 }

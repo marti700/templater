@@ -1,0 +1,16 @@
+<h1>Section 1</h1>
+
+<form>
+    <div id="section-1-container" class="section-container">
+        <div id="element-dummy"></div>
+
+        <button hx-trigger="click" hx-target="#customer-selection" hx-get="/customer/select?p=1" data-bs-toggle="modal"
+            data-bs-target="#customer-selection">Agregar</button>
+    </div>
+</form>
+
+<div id="customer-selection" class="modal modal-blur" style="display: none" aria-hidden="false" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content"></div>
+    </div>
+</div>
