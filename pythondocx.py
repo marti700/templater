@@ -47,7 +47,7 @@ data_json_simaltion = {
             "no_identificacion": "40221884915"
         }
     ],
-    "comprador": [
+    "<<comprador>>": [
         {
             "nombre": "Anulfo",
             "apellido": "Alcantara Aquino",
@@ -75,16 +75,26 @@ def create_text_object(template):
     # Iterate over the words and create text nodes
     for word in words:
         match = re.match(r"{(.+):(.+)}", word)
+        # match2 = re.match(r"{(.+)}", word)
         if match:
             # Found a curly-braced expression
             string = match.group(1)
             styles = match.group(2).split(",")
             text_object["paragraphs"].append({
                 "textNode": {
-                    "string": string,
+                    "string": "{"+string+'}',
                     "style": styles
                 }
             })
+        # elif match2:
+        #     # Found a curly-braced expression
+        #     string = match2.group(1)
+        #     text_object["paragraphs"].append({
+        #         "textNode": {
+        #             "string": word,
+        #             "style": []
+        #         }
+        #     })
         else:
             # Regular word or punctuation
             text_object["paragraphs"].append({
@@ -96,21 +106,76 @@ def create_text_object(template):
 
     return text_object
 
+def enhanceTemplate(main_tempate):
+
+    template = "{nombre:negrita,mayusculas}, de nacionalidad {nacionalidad}, mayor de edad, {estado_civil}, {ocupacion}, portador de {identificacion} No. {numero_identificacion}, domiciliado y residente en {direccion}"
+    templates = {
+        "<<vendedor>>": template,
+        "<<comprador>>": template,
+        "<<descripcion>>": "Un carro",
+        "<<justificacion>>": "Es mio"
+    }
+
+    for key, value in data_json_simaltion.items():
+        res = ["" + templates[key]  for r in range(len(value)) if key in templates]
+        if key in templates:
+            main_tempate = main_tempate.replace(key, "; ".join(res))
+    return main_tempate
+
+def buildDocument(params, template):
+    # document = Document("EjemploGenerales.docx")
+    # paragraph = document.paragraphs[0]
+    # print(paragraph.text)
+
+    # document = Document("EjemploGenerales.docx")
+    # with open('resume.xml', 'w') as f:
+    # 	f.write(document._element.xml)
+
+
+    document = Document()
+    document.add_heading('Document Title', 0)
+
+    buffer = ''
+    p = document.add_paragraph(buffer)
+    for word in template['paragraphs']:
+        w: str = ''
+        w = word['textNode']['string']
+        if w[0] == '{':
+            p.add_run(buffer)
+            # w.replace('{','')
+            # w.replace('}','')
+            #TODO search the json
+            fromJson = 'TEST_TEXT'
+            if len(word['textNode']['style']) > 0:
+                styles = word['textNode']['style']
+                run = p.add_run(fromJson + ' ')
+                for s in styles:
+                    if s == 'mayusculas':
+                        run.text = fromJson.upper() + ' '
+                    if s == 'negrita':
+                        run.bold = True
+            else:
+                p.add_run(fromJson+ '')
+
+            buffer = ''
+        else:
+            buffer = buffer + w + ' '
+
+
+    # p = document.add_paragraph('Entre de una parte El senor ')
+    # p.add_run('Dominicano, mayor de edad, soltero, empleado privado, portador de la cedula de identidad y electoral No. 40221849o15, domiciliado y recidente en Santo Domingo;')
+    # p.add_run('quien en lo que sigue del presente contrato se denominara ')
+    # p.add_run('EL VENDEDOR').bold=True
+    # p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+    document.save('demo1.docx')
+
+
 
 # Example usage
-template = "{nombre:negrita,mayusculas}, de nacionalidad {nacionalidad}, mayor de edad, {estado_civil}, {ocupacion}, portador de {identificacion} No. {numero_identificacion}, domiciliado y residente en {direccion}"
-template2 = "Entre de una parte <<vendedor>>, quien en lo que sigue del presente contrato se denominará {vendedor:negrita:mayusculas}, y de la otra parte: <<comprador>>, quien en lo que sigue del presente contrato se denominará {comprador:negrita:mayusculas}, se ha convenido y pactado el siguiente"
+template2 = "Entre de una parte <<vendedor>>, quien en lo que sigue del presente contrato se denominará {vendedor:negrita,mayusculas}, y de la otra parte: <<comprador>>, quien en lo que sigue del presente contrato se denominará {comprador:negrita,mayusculas}, se ha convenido y pactado el siguiente"
 
-templates = {
-    "<<vendedor>>": template,
-    "<<comprador>>": template,
-    "<<descripcion>>": "Un carro",
-    "<<justificacion>>": "Es mio"
-}
+template2 = enhanceTemplate(template2)
 
-for key, value in data_json_simaltion.items():
-    res = ["" + templates[key]  for r in range(len(value)) if key in templates]
-    if key in templates:
-        template2 = template2.replace(key, "; ".join(res))
 text_object = create_text_object(template2)
 print(text_object)
+buildDocument(data_json_simaltion, text_object)
