@@ -24,8 +24,8 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 
 import re
 
-sections = ["<<vendedor>>,", "<<comprador>>", "<<justificacion>>", "<<descripcion>>"]
-
+sections = ["<<vendedor>>,", "<<comprador>>",
+            "<<justificacion>>", "<<descripcion>>"]
 data_json_simaltion = {
     "<<vendedor>>": [
         {
@@ -35,7 +35,8 @@ data_json_simaltion = {
             "nacionalidad": "Dominicana",
             "direccion": "C/ Antonio Maceo, edif Coronado, apto 5A, Santo Domingo, Distrino Nacional",
             "identificacion": "cedula",
-            "no_identificacion": "40221884915"
+            "numero_identificacion": "40221884915",
+            "estado_civil": "soltero"
         },
         {
             "nombre": "Loanny",
@@ -44,7 +45,8 @@ data_json_simaltion = {
             "nacionalidad": "Dominicana",
             "direccion": "C/ Antonio Maceo, edif Coronado, apto 5A, Santo Domingo, Distrino Nacional",
             "identificacion": "cedula",
-            "no_identificacion": "40221884915"
+            "numero_identificacion": "40221884915",
+            "estado_civil": "soltera"
         }
     ],
     "<<comprador>>": [
@@ -55,7 +57,8 @@ data_json_simaltion = {
             "nacionalidad": "Dominicana",
             "direccion": "C/ Olmedo Paniagua, #20 Res olmedo paniagua, San Juan de la Maguana",
             "identificacion": "cedula",
-            "no_identificacion": "40251948812"
+            "numero_identificacion": "40251948812",
+            "estado_civil": "soltero"
         }
     ],
     "<<descripcion>>": ["Un carro"],
@@ -106,6 +109,7 @@ def create_text_object(template):
 
     return text_object
 
+
 def enhanceTemplate(main_tempate):
 
     template = "{nombre:negrita,mayusculas}, de nacionalidad {nacionalidad}, mayor de edad, {estado_civil}, {ocupacion}, portador de {identificacion} No. {numero_identificacion}, domiciliado y residente en {direccion}"
@@ -117,10 +121,12 @@ def enhanceTemplate(main_tempate):
     }
 
     for key, value in data_json_simaltion.items():
-        res = ["" + templates[key]  for r in range(len(value)) if key in templates]
+        res = ["" + templates[key]
+               for r in range(len(value)) if key in templates]
         if key in templates:
             main_tempate = main_tempate.replace(key, "; ".join(res))
     return main_tempate
+
 
 def buildDocument(params, template):
     # document = Document("EjemploGenerales.docx")
@@ -131,7 +137,6 @@ def buildDocument(params, template):
     # with open('resume.xml', 'w') as f:
     # 	f.write(document._element.xml)
 
-
     document = Document()
     document.add_heading('Document Title', 0)
 
@@ -141,26 +146,12 @@ def buildDocument(params, template):
         w: str = ''
         w = word['textNode']['string']
         if w[0] == '{':
-            p.add_run(buffer)
-            # w.replace('{','')
-            # w.replace('}','')
-            #TODO search the json
-            fromJson = 'TEST_TEXT'
-            if len(word['textNode']['style']) > 0:
-                styles = word['textNode']['style']
-                run = p.add_run(fromJson + ' ')
-                for s in styles:
-                    if s == 'mayusculas':
-                        run.text = fromJson.upper() + ' '
-                    if s == 'negrita':
-                        run.bold = True
-            else:
-                p.add_run(fromJson+ '')
-
+            p.add_run(buffer + ' ')
+            replace_text_in_paragraph(word, params, p)
             buffer = ''
+            # params.pop(0)
         else:
             buffer = buffer + w + ' '
-
 
     # p = document.add_paragraph('Entre de una parte El senor ')
     # p.add_run('Dominicano, mayor de edad, soltero, empleado privado, portador de la cedula de identidad y electoral No. 40221849o15, domiciliado y recidente en Santo Domingo;')
@@ -170,12 +161,44 @@ def buildDocument(params, template):
     document.save('demo1.docx')
 
 
+def replace_text_in_paragraph(word, params, paragraph):
+    w = word['textNode']['string']
+    w = w[:-1]
+    w = w.replace('{', '')
+    w = w.replace('}', '')
+    text = ''
+    if w[0] != '[':
+        # TODO search the json
+        text = params[0].pop(w, None) if len(params) > 0 else "Hay bobo"
+        if text == None:
+            params.pop(0)
+            text = params[0].pop(w, None)
+    else:
+        text = w[1:-1]
+    # fromJson = 'TEST_TEXT'
+    if len(word['textNode']['style']) > 0:
+        styles = word['textNode']['style']
+        run = paragraph.add_run(text + ' ')
+        for s in styles:
+            if s == 'mayusculas':
+                run.text = text.upper() + ' '
+            if s == 'negrita':
+                run.bold = True
+    else:
+        paragraph.add_run(text + '')
+
 
 # Example usage
-template2 = "Entre de una parte <<vendedor>>, quien en lo que sigue del presente contrato se denominará {vendedor:negrita,mayusculas}, y de la otra parte: <<comprador>>, quien en lo que sigue del presente contrato se denominará {comprador:negrita,mayusculas}, se ha convenido y pactado el siguiente"
+template2 = "Entre de una parte <<vendedor>>, quien en lo que sigue del presente contrato se denominará {[vendedor]:negrita,mayusculas}, y de la otra parte: <<comprador>>, quien en lo que sigue del presente contrato se denominará {[comprador]:negrita,mayusculas}, se ha convenido y pactado el siguiente"
 
 template2 = enhanceTemplate(template2)
 
 text_object = create_text_object(template2)
 print(text_object)
-buildDocument(data_json_simaltion, text_object)
+
+params = []
+for key, value in data_json_simaltion.items():
+    params.append(value)
+
+params = [item for values in params for item in values]
+buildDocument(params, text_object)
