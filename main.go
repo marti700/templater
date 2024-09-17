@@ -34,6 +34,7 @@ func main() {
 	http.HandleFunc("/document/template/upload", document.Uploadtemplate("./tmpls/", "./templates.html"))
 	http.HandleFunc("/document/templates", document.GetTemplatesList("./tmpls/", "./templates.html"))
 	http.HandleFunc("/document/new", document.NewDocument("./tmpls/", "./document-selection.html"))
+	http.HandleFunc("/document/sections/add", document.NewSection("./tmpls/"))
 
 	http.HandleFunc("/wizard/customer/add", document.AddCustomer)
 

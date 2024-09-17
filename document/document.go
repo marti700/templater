@@ -1,6 +1,7 @@
 package document
 
 import (
+	"bufio"
 	"fmt"
 	"io"
 	"log"
@@ -177,8 +178,13 @@ func Uploadtemplate(templatesFolderPath, templatePath string) func(http.Response
 
 		defer documentFile.Close()
 		fileName := header.Filename
-		filePath := templatesFolderPath + fileName
-
+		folderName := fileName[:strings.LastIndex(fileName, ".")]
+		err = os.MkdirAll(templatesFolderPath+folderName, os.ModePerm)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		filePath := templatesFolderPath + folderName + "/" + fileName
 		dst, err := os.Create(filePath)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -190,6 +196,8 @@ func Uploadtemplate(templatesFolderPath, templatePath string) func(http.Response
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+
+		saveDocSections(r.Form["section-name"], r.Form["section-type"], templatesFolderPath+folderName+"/")
 
 		fileNames, err := templateNames(templatesFolderPath)
 		if err != nil {
@@ -205,6 +213,34 @@ func Uploadtemplate(templatesFolderPath, templatePath string) func(http.Response
 			return
 		}
 	}
+}
+
+func saveDocSections(names, types []string, path string) error {
+	file, err := os.Create(path + "cfg.txt")
+
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	// Create a buffered writer for efficient writing
+	writer := bufio.NewWriter(file)
+
+	// Iterate over both slices simultaneously
+	for i := 0; i < len(names); i++ {
+		line := fmt.Sprintf("%s;%s\n", names[i], types[i])
+		_, err := writer.WriteString(line)
+		if err != nil {
+			return err
+		}
+	}
+
+	// Flush the buffer to ensure data is written
+	err = writer.Flush()
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func GetTemplatesList(templatesFolderPath, templatePath string) func(http.ResponseWriter, *http.Request) {
@@ -234,6 +270,20 @@ func NewDocument(templatesFolderPath, templatePath string) func(http.ResponseWri
 
 		tmpl := template.Must(template.ParseFiles("./document-selection.html"))
 		err = tmpl.Execute(w, fileNames)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
+func NewSection(templatesFolderPath string) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		err := template.Must(template.New("doc-sections").Parse(
+			`<div>
+				<label>Nombre:</label> <input type="text" name="section-name"/> <label> Tipo: </label> <select name="section-type"> <option> Seleccion de cliente </option> <option> sub-plantilla</option></select>
+			</div>`)).Execute(w, nil)
+
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
