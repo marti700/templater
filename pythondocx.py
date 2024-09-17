@@ -65,7 +65,6 @@ data_json_simaltion = {
     "<<justificacion>>": ["Es mio"]
 }
 
-
 def create_text_object(template):
     template2 = "{nombre:negrita,mayusculas}, de nacionalidad {nacionalidad}, mayor de edad, {estado_civil}, {ocupacion}, portador de {identificacion} No. {numero_identificacion}, domiciliado y residente en {direccion}"
     text_object = {
@@ -187,6 +186,8 @@ def replace_text_in_paragraph(word, params, paragraph):
     else:
         paragraph.add_run(text + '')
 
+def template_to_paragraphs(template):
+    return re.split("\n",template)
 
 # Example usage
 template2 = "Entre de una parte <<vendedor>>, quien en lo que sigue del presente contrato se denominará {[vendedor]:negrita,mayusculas}, y de la otra parte: <<comprador>>, quien en lo que sigue del presente contrato se denominará {[comprador]:negrita,mayusculas}, se ha convenido y pactado el siguiente"
@@ -202,3 +203,30 @@ for key, value in data_json_simaltion.items():
 
 params = [item for values in params for item in values]
 buildDocument(params, text_object)
+
+p = template_to_paragraphs("""Entre de una parte <<vendedor>>, quien en lo que sigue del presente contrato se denominará {rol1:negrita:mayusculas}, y de la otra parte: <<comprador>>, quien en lo que sigue del presente contrato se denominará {rol2:negrita:mayusculas, se ha convenido y pactado el siguiente: -----------------------------------------------------
+Contrato
+PRIMERO: {rol1:negrita:mayusculas}, por medio del presente acto VENDE, CEDE Y TRANSFIERE desde ahora y para siempre con todas las garantías legales y sin impedimento alguno a favor de {rol2:negrita:mayusculas}, quien acepta conforme el bien  de su propiedad que se describe a continuación:
+
+<<descripcion>>
+
+SEGUNDO: El precio convenido y pactado entre las partes ha sido por la suma de {precio_letras}(RD$ {precio_numero}), pesos Dominicanos, suma esta que {rol1:negrita:mayusculas}, declara haber recibido en moneda de curso legal de manos de {rol2:negrita:mayusculas} a su entera satisfacción, por lo que otorga  recibo de descargo y finiquito legal y carta liberatoria de pago en toda forma de derecho a favor de {rol2:negrita:mayusculas}.-
+======================================================
+TERCERO: {rol1:negrita:mayusculas}, justifica su derecho de propiedad al objeto de la presente venta por <<justificacion>>.
+
+CUARTO: Las partes hacen constar que están conformes con todos los convenidos y pactado en el presente contrato, por lo que proceden a dar su aprobación firmando al pie del mismo.---------------------------------------------
+
+HECHO LEIDO Y FIRMADO DE BUENA FE, en dos  (2) originales del mismo contenido y efecto uno para cada una de las partes. En  la ciudad y municipio de San Juan de la Maguana, provincia San Juan, a los {fecha}.
+
+
+                   Todo bien                                                            asdlfj
+                {rol1:negrita}                                                    {rol2:negrita}
+
+
+YO DR. TEODORO ALCANTARA BIDO, Notario Público de los del número de este municipio de San Juan de la Maguana, miembro del colegio dominicano de Notarios, con matrícula No. 1799, CERTIFICO Y DOY FE, que las firmas que aparecen al pie del presente documento fueron puestas libre y voluntariamente en mi presencia, por los Señores: Todo bien Y asdlfj, de generales anotadas y quienes me declararon BAJO LA FE DEL JURAMENTO, que esas son las mismas firmas que ellos acostumbran a usar en todos los actos de  su vida pública y privada, por lo que merecen Fe y Crédito. En  la ciudad y municipio de San Juan de la Maguana, provincia San Juan, a los {fecha}.---------------------------------------------------
+
+
+                                                                 DR. TEODORO ALCÁNTARA BIDO
+                                                                                          Notario-Publico
+""")
+print("OK")
