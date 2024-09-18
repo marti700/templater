@@ -1,5 +1,9 @@
 <form method="POST" action="/document/template/upload" enctype="multipart/form-data">
     <input type="file" id="myFile" name="template">
+    <div id=sections>
+        <div id="element-dummy"></div>
+        <button type="button" hx-swap="beforebegin" hx-target="#element-dummy" hx-get="/document/sections/add">Agregar secciones</button>
+    </div>
     <input type="submit">
 </form>
 

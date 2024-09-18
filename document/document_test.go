@@ -33,6 +33,31 @@ func TestDocumentPreview(t *testing.T) {
 
 }
 
+func TestSectionsAdding(t *testing.T) {
+	req, err := http.NewRequest("GET", "http://localhost:9090/document/sections/add", nil)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+	//
+	reqRecorder := responseRecorderHelper(req, NewSection("./testTemplates/"))
+
+	// Check the status code and the body of the response.
+	if status := reqRecorder.Code; status != http.StatusOK {
+		t.Error("handler returned wrong status code:", status)
+	}
+
+	expectedResponse := `<div>
+				<label>Nombre:</label> <input type="text" name="section-name"/> <label> Tipo: </label> <select name="section-type"> <option> Seleccion de cliente </option> <option> sub-plantilla</option></select>
+			</div>`
+
+	actualResponse := reqRecorder.Body.String()
+
+	if expectedResponse != actualResponse {
+		t.Error("Expected response is ", expectedResponse, "but was: ", actualResponse)
+	}
+}
+
 func TestTemplateList(t *testing.T) {
 	req, err := http.NewRequest("GET", "http://localhost:9090/document/templates", nil)
 	if err != nil {
@@ -130,7 +155,7 @@ func TestUploadTemplate(t *testing.T) {
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	writer.Close()
 	reqRecorder := httptest.NewRecorder()
-	handler := http.HandlerFunc(Uploadtemplate("../tmpls/", "../templates.html"))
+	handler := http.HandlerFunc(Uploadtemplate("./testFiles/", "../templates.html"))
 
 	handler.ServeHTTP(reqRecorder, req)
 
@@ -139,13 +164,22 @@ func TestUploadTemplate(t *testing.T) {
 		fmt.Println("handler returned wrong status code:", status)
 	}
 
-	uploadedFile, err := os.Open("./testFiles/testTemplate.txt")
+	uploadedFile, err := os.Open("./testFiles/testTemplate/testTemplate.txt")
 
 	if err != nil && uploadedFile.Name() != "testTemplate.txt" {
 		t.Error("File was not correctly uploaded")
 	}
+	configFile, err := os.Open("./testFiles/testTemplate/cfg.txt")
 
-	os.Remove("../tmpls/testTemplate.txt")
+	if err != nil && configFile.Name() != "cfg.txt" {
+		t.Error("Section configuration file was not correctly saved")
+	}
+
+	err = os.RemoveAll("./testFiles/testTemplate/")
+
+	if err != nil {
+		fmt.Println(err.Error())
+	}
 }
 
 func responseRecorderHelper(req *http.Request,
@@ -173,10 +207,10 @@ func testResponse(t *testing.T, reqRecorder *httptest.ResponseRecorder, expected
 
 	actualResponse := reqRecorder.Body.String()
 	expectedResponse := string(f)
-	// os.WriteFile("tt.html", reqRecorder.Body.Bytes(), 0755)
+	os.WriteFile("tt.html", reqRecorder.Body.Bytes(), 0755)
 
 	fmt.Println(actualResponse)
-	if actualResponse != expectedResponse {
+	if strings.Trim(actualResponse, "\n") != strings.Trim(expectedResponse, "\n") {
 		t.Error("Returned HTML is not the correct one")
 	}
 }
