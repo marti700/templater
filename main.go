@@ -31,7 +31,7 @@ func main() {
 	// Document routes
 	http.HandleFunc("/document", document.DocumentPreview("./tmpls/", "./sections.html"))
 	http.HandleFunc("/document/create", document.CreteDocument("./tmpls/"))
-	http.HandleFunc("/document/template/upload", document.Uploadtemplate("./tmpls/", "./templates.html"))
+	http.HandleFunc("/document/template/upload", document.Uploadtemplate("./tmpls/", "./uploadTemplate.html"))
 	http.HandleFunc("/document/templates", document.GetTemplatesList("./tmpls/", "./templates.html"))
 	http.HandleFunc("/document/new", document.NewDocument("./tmpls/", "./document-selection.html"))
 	http.HandleFunc("/document/sections/add", document.NewSection("./tmpls/"))
@@ -47,6 +47,9 @@ func main() {
 			return
 		}
 	})
+
+	fs := http.FileServer(http.Dir("./dist"))
+	http.Handle("/dist/", http.StripPrefix("/dist/", fs))
 
 	fmt.Println("Executing server...")
 	err := http.ListenAndServe(":9090", nil)

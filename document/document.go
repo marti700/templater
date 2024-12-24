@@ -3,7 +3,6 @@ package document
 import (
 	"bufio"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"os"
@@ -164,50 +163,51 @@ func templateNames(templatesPath string) ([]string, error) {
 
 func Uploadtemplate(templatesFolderPath, templatePath string) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		err := r.ParseMultipartForm(10 << 20)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
+		// err := r.ParseMultipartForm(10 << 20)
+		// if err != nil {
+		// 	http.Error(w, err.Error(), http.StatusInternalServerError)
+		// 	return
 
-		}
-		documentFile, header, err := r.FormFile("template")
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+		// }
+		// documentFile, header, err := r.FormFile("template")
+		// if err != nil {
+		// 	http.Error(w, err.Error(), http.StatusInternalServerError)
+		// 	return
+		// }
 
-		defer documentFile.Close()
-		fileName := header.Filename
-		folderName := fileName[:strings.LastIndex(fileName, ".")]
-		err = os.MkdirAll(templatesFolderPath+folderName, os.ModePerm)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		filePath := templatesFolderPath + folderName + "/" + fileName
-		dst, err := os.Create(filePath)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		defer dst.Close()
+		// defer documentFile.Close()
+		// fileName := header.Filename
+		// folderName := fileName[:strings.LastIndex(fileName, ".")]
+		// err = os.MkdirAll(templatesFolderPath+folderName, os.ModePerm)
+		// if err != nil {
+		// 	http.Error(w, err.Error(), http.StatusInternalServerError)
+		// 	return
+		// }
+		// filePath := templatesFolderPath + folderName + "/" + fileName
+		// dst, err := os.Create(filePath)
+		// if err != nil {
+		// 	http.Error(w, err.Error(), http.StatusInternalServerError)
+		// 	return
+		// }
+		// defer dst.Close()
 
-		if _, err := io.Copy(dst, documentFile); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+		// if _, err := io.Copy(dst, documentFile); err != nil {
+		// 	http.Error(w, err.Error(), http.StatusInternalServerError)
+		// 	return
+		// }
 
-		saveDocSections(r.Form["section-name"], r.Form["section-type"], templatesFolderPath+folderName+"/")
+		// saveDocSections(r.Form["section-name"], r.Form["section-type"], templatesFolderPath+folderName+"/")
 
-		fileNames, err := templateNames(templatesFolderPath)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+		// fileNames, err := templateNames(templatesFolderPath)
+		// if err != nil {
+		// 	http.Error(w, err.Error(), http.StatusInternalServerError)
+		// 	return
+		// }
 
 		w.Header().Set("Content-Type", "text/html")
 		tmpl := template.Must(template.ParseFiles(templatePath))
-		err = tmpl.Execute(w, fileNames)
+		// err = tmpl.Execute(w, fileNames)
+		err := tmpl.Execute(w, nil)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
