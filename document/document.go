@@ -22,6 +22,11 @@ type DocMetadata struct {
 	Template string
 }
 
+type Document struct {
+	Name     string
+	Template string
+}
+
 func replaceInputPlaceholders(input string) string {
 	re := regexp.MustCompile(`\{([^}]+):input\}`)
 	return re.ReplaceAllStringFunc(input, func(match string) string {
@@ -216,18 +221,36 @@ func Uploadtemplate(templatesFolderPath, templatePath string) func(http.Response
 	}
 }
 
-func SaveTemplate(conf conf.DBConfig) func(w http.ResponseWriter, r *http.Request) {
+func SaveTemplate(dbconf conf.DBConfig) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
+
 		err := r.ParseForm()
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		templateName := r.FormValue("templateName")
-		innerHTML := r.FormValue("html")
-		fmt.Println(innerHTML)
-		fmt.Println(templateName)
+		db := dbconf.DbConn()
+		stmt, err := db.Prepare("INSERT INTO documents (name, template) VALUES ($1, $2)")
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		defer stmt.Close()
+
+		res, err := stmt.Exec(r.FormValue("templateName"), r.FormValue("html"))
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		_, err = res.RowsAffected()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 }
 
