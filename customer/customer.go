@@ -198,14 +198,6 @@ func GetCustomerById(dbconf conf.DBConfig, templatePath string) func(w http.Resp
 
 func SelectCustomer(dbconf conf.DBConfig, templatePath string) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		err := r.ParseForm()
-		if err != nil {
-			return
-		}
-
-		ca := r.FormValue("files")
-		fmt.Println(ca)
-
 		c, err := FindAllCustomers(dbconf)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)

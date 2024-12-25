@@ -12,6 +12,7 @@ import (
 
 	"code.sajari.com/docconv/v2"
 	"github.com/lukasjarosch/go-docx"
+	"github.com/marti700/templater/conf"
 	"github.com/marti700/templater/customer"
 )
 
@@ -212,6 +213,19 @@ func Uploadtemplate(templatesFolderPath, templatePath string) func(http.Response
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+	}
+}
+
+func SaveTemplate(conf conf.DBConfig) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		err := r.ParseForm()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		innerHTML := r.FormValue("html")
+		fmt.Println(innerHTML)
 	}
 }
 
