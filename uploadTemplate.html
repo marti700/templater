@@ -27,7 +27,9 @@
       </select>
     </div>
     <!-- <button id="loadButton" class="btn btn-primary px-4">Reload</button> -->
-    <button id="saveTemplate" onclick="saveTemplate()" class="btn btn-primary px-4">Guardar</button>
+    <!-- <button id="saveTemplate" onclick="saveTemplate()" class="btn btn-primary px-4">Guardar</button> -->
+    <button id="saveTemplate" class="btn btn-primary px-4" data-bs-toggle="modal"
+      data-bs-target="#templateModal">Guardar</button>
     <!-- <div class="dropdown"> -->
     <!-- <button class="btn btn-secondary dropdown-toggle" type="button" id="optionsMenuButton"
                     data-bs-toggle="dropdown" aria-expanded="false">
@@ -46,6 +48,25 @@
     </details>
     <div id="document-container" class="overflow-auto flex-grow-1 h-100"></div>
   </div>
+
+  <div class="modal fade" id="templateModal" tabindex="-1" aria-labelledby="templateModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="templateModalLabel">Enter Template Name</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <input type="text" id="templateName" class="form-control" placeholder="Template Name">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" onclick="saveTemplate()">Save Template</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 
   <script>
     let currentDocument = null;
@@ -131,38 +152,49 @@
     });
 
     function saveTemplate() {
-      const element = document.getElementById('document-container'); // Or any other selector
+      const templateName = document.getElementById('templateName').value;
+      const container = document.getElementById('document-container');
 
-      if (element) {
-        const htmlContent = element.innerHTML;
+      if (!templateName) {
+        alert("Please enter a template name.");
+        return;
+      }
 
-        fetch('/document/template/save', { // Replace with your server endpoint
+      if (container) {
+        const htmlContent = container.innerHTML;
+
+        const params = new URLSearchParams();
+        params.append('html', htmlContent);
+        params.append('templateName', templateName);
+
+        fetch('/document/template/save', {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/x-www-form-urlencoded', // Or 'application/json' (see explanation)
-            // If you need any authorization headers
-            // 'Authorization': 'Bearer YOUR_TOKEN'
+            'Content-Type': 'application/x-www-form-urlencoded',
           },
-          body: 'html=' + encodeURIComponent(htmlContent) // For form-urlencoded
-          // If sending JSON:
-          // body: JSON.stringify({ html: htmlContent })
+          body: params
         })
           .then(response => {
             if (!response.ok) {
               throw new Error(`HTTP error! status: ${response.status}`);
             }
-            return response.text(); // Or response.json() if your server sends JSON back
+            return response.text();
           })
           .then(data => {
-            console.log('Success:', data); // Handle the server's response
+            console.log('Success:', data);
+            // Close the modal after successful save
+            const modal = bootstrap.Modal.getInstance(document.getElementById('templateModal'));
+            modal.hide();
           })
           .catch((error) => {
-            console.error('Error:', error); // Handle errors
+            console.error('Error:', error);
+            alert("An error occurred while saving the template."); // Alert user on error
           });
       } else {
         console.error("Element not found!");
       }
     }
+
   </script>
 </body>
 

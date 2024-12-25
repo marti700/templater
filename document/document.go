@@ -224,8 +224,10 @@ func SaveTemplate(conf conf.DBConfig) func(w http.ResponseWriter, r *http.Reques
 			return
 		}
 
+		templateName := r.FormValue("templateName")
 		innerHTML := r.FormValue("html")
 		fmt.Println(innerHTML)
+		fmt.Println(templateName)
 	}
 }
 
