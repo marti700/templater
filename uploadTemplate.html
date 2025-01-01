@@ -69,7 +69,10 @@
 
 
   <script>
+    let repString = {};
+    let repeatedID = 1;
     let currentDocument = null;
+
     const docxOptions = Object.assign(docx.defaultOptions, {
       debug: true,
       experimental: true
@@ -175,10 +178,25 @@
           body: params
         })
           .then(response => {
-            if (!response.ok) {
-              throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.text();
+            // if (!response.ok) {
+            //   throw new Error(`HTTP error! status: ${response.status}`);
+            // }
+            // // Check if the server responded with a 303 See Other status
+            // if (response.status === 303) {
+            //   // Extract the redirection URL from the 'Location' header
+            //   const redirectUrl = response.headers.get('Location');
+            //   if (redirectUrl) {
+            //     // Perform the redirection using JavaScript
+            //     console.log(redirectUrl);
+            //     window.location.href = redirectUrl;
+            //   } else {
+            //     console.error("No redirection URL found in response headers.");
+            //   }
+            // } else {
+            //   // Handle other successful responses (e.g., 201 Created)
+            //   return response.text();
+            // }
+            console.log("All Good!!")
           })
           .then(data => {
             console.log('Success:', data);
@@ -194,6 +212,68 @@
         console.error("Element not found!");
       }
     }
+    /// =========================
+    /// BUTTON KUNG-FU
+    /// =========================
+
+    // let art = document.getElementsByTagName("article")[0].innerHTML
+    function fixedString() {
+      let article = document.getElementsByTagName("article")[0].innerHTML;
+
+      let repeatStart = article.indexOf('[repeat[[');
+      let repeatEnd = article.indexOf(']]]');
+      let repeatString = article.substring(repeatStart + 9, repeatEnd);
+      // let fixedString = ''
+
+      if (repeatString.indexOf("</") == 0) {
+        let closingTag = repeatString.indexOf(">")
+        repeatString = repeatString.substring(closingTag + 1)
+      }
+
+      const repeatEndIdx = article.indexOf('<', article.indexOf(']]]'))
+
+      if (article[repeatEndIdx + 1] == '/') {
+        console.log(repeatEndIdx)
+        console.log(repeatString);
+        let missing = article.substring(article.indexOf(']]]') + 3, article.indexOf('>', repeatEndIdx) + 1);
+        console.log(missing);
+        // fixedString = fixedString + fixedString.substring(article.indexOf(']]]')+3, article.indexOf('>', repeatEndIdx)+1);
+        repeatString = repeatString + missing;
+        console.log(repeatString);
+      }
+
+      article = article.replace('[repeat[[', '');
+      article = article.replace(']]]', '');
+
+      const replaceIndexStart = article.indexOf(repeatString);
+      console.log(replaceIndexStart);
+      console.log('============');
+      console.log(repeatString);
+      console.log('============');
+
+      return repeatString;
+    }
+
+    function insertButton(article) {
+      // article = article.replace(repeatString, `<div><button onclick="this.parentElement.innerHTML = '${repeatString.replace(/'/g, "\\'")}';">Agregar</button></div>`);
+
+      let repeatString = fixedString();
+      article = article.replace('[repeat[[', '');
+      article = article.replace(']]]', '');
+      repString[repeatedID++] = repeatString;
+      return article.replaceAll(repeatString, `<div><button id='a1' onclick="replaceHTML('a1')">Agregar</button></div>`);
+    }
+
+    function replaceHTML(elementId) {
+      let idx = repeatedID - 1;
+      elem = document.getElementById(elementId);
+      elem.outerHTML = repString[idx]
+    }
+
+    /// =========================
+    /// BUTTON KUNG-FU END
+    /// =========================
+
 
   </script>
 </body>

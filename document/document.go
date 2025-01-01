@@ -251,6 +251,12 @@ func SaveTemplate(dbconf conf.DBConfig) func(w http.ResponseWriter, r *http.Requ
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+
+		// redirectURL := url.URL{Scheme: "http", Host: r.Host, Path: "/document/templates"}
+		// w.Header().Set("Location", redirectURL.String())
+		// w.WriteHeader(http.StatusSeeOther)
+
+		http.Redirect(w, r, "/document/templates", http.StatusSeeOther)
 	}
 }
 
@@ -282,21 +288,50 @@ func saveDocSections(names, types []string, path string) error {
 	return nil
 }
 
-func GetTemplatesList(templatesFolderPath, templatePath string) func(http.ResponseWriter, *http.Request) {
+func GetTemplatesList(dbconf conf.DBConfig, templatePath string) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		fileNames, err := templateNames(templatesFolderPath)
+
+		// fileNames, err := templateNames(templatesFolderPath)
+		// if err != nil {
+		// 	http.Error(w, err.Error(), http.StatusInternalServerError)
+		// 	return
+		// }
+
+		templates, err := findAllTemplates(dbconf)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		tmpl := template.Must(template.ParseFiles(templatePath))
-		err = tmpl.Execute(w, fileNames)
+		err = tmpl.Execute(w, templates)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 	}
+}
+
+func findAllTemplates(dbconf conf.DBConfig) ([]Document, error) {
+	db := dbconf.DbConn()
+	rows, err := db.Query("Select name, template from documents")
+	if err != nil {
+		return nil, err
+	}
+
+	var documents []Document
+
+	for rows.Next() {
+		doc := Document{}
+		err := rows.Scan(&doc.Name, &doc.Template)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+		documents = append(documents, doc)
+	}
+
+	return documents, nil
+
 }
 
 func NewDocument(templatesFolderPath, templatePath string) func(http.ResponseWriter, *http.Request) {

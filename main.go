@@ -33,7 +33,7 @@ func main() {
 	http.HandleFunc("/document/create", document.CreteDocument("./tmpls/"))
 	http.HandleFunc("/document/template/upload", document.Uploadtemplate("./tmpls/", "./uploadTemplate.html"))
 	http.HandleFunc("/document/template/save", document.SaveTemplate(dbConfig))
-	http.HandleFunc("/document/templates", document.GetTemplatesList("./tmpls/", "./templates.html"))
+	http.HandleFunc("/document/templates", document.GetTemplatesList(dbConfig, "./templates.html"))
 	http.HandleFunc("/document/new", document.NewDocument("./tmpls/", "./document-selection.html"))
 	http.HandleFunc("/document/sections/add", document.NewSection("./tmpls/"))
 
