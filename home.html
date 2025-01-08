@@ -9,6 +9,16 @@
         integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     <link href="/dist/css/bootstrap.min.css" rel="stylesheet" />
     <script src="/dist/js/bootstrap.bundle.min.js"></script>
+    <!--dependencies-->
+    <script src="/dist/js/jszip.min.js"></script>
+    <!--library-->
+    <script src="/dist/js/docx-preview.js"></script>
+    <!--thumbnail example-->
+    <!-- <script src="./demo/thumbnail.example.js"></script> -->
+    <!-- <link href="./demo/thumbnail.example.css" rel="stylesheet"> -->
+    <script src="/dist/js/tiff.min.js"></script>
+    <script src="/dist/js/tiff-preprocessor.js"></script>
+
 
     <title>Templater</title>
     <!-- <style>
@@ -44,7 +54,7 @@
 </head>
 
 <body>
-    <div id="page" class="App" style="width: 100%; height: 100%;">
+    <div id="page" class="App vh-100 d-flex flex-column" style="width: 100%; height: 100%;">
         <div class="splitscreen">
             <a class="nav-link" hx-get="/document/templates" hx-trigger="click" hx-target="#page">
                 <img src="https://icons.iconarchive.com/icons/antialiasfactory/jewelry/256/Files-Folder-icon.png"

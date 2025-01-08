@@ -1,281 +1,241 @@
-<!DOCTYPE html>
-<html>
-
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport"
-    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, viewport-fit=cover" />
-  <link href="/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <script src="/dist/js/bootstrap.bundle.min.js"></script>
-  <!--dependencies-->
-  <script src="/dist/js/jszip.min.js"></script>
-  <!--library-->
-  <script src="/dist/js/docx-preview.js"></script>
-  <!--thumbnail example-->
-  <!-- <script src="./demo/thumbnail.example.js"></script> -->
-  <!-- <link href="./demo/thumbnail.example.css" rel="stylesheet"> -->
-  <script src="/dist/js/tiff.min.js"></script>
-  <script src="/dist/js/tiff-preprocessor.js"></script>
-</head>
-
-<body class="vh-100 d-flex flex-column">
-  <div class="hstack p-2 gap-2 bg-light">
-    <input id="files" type="file" class="form-control" style="width: 50ch;" accept=".docx" />
-    <div class="col-2">
-      <select id="testDocuments" class="form-select">
-        <option disabled selected>-- Test Documents --</option>
-      </select>
-    </div>
-    <!-- <button id="loadButton" class="btn btn-primary px-4">Reload</button> -->
-    <!-- <button id="saveTemplate" onclick="saveTemplate()" class="btn btn-primary px-4">Guardar</button> -->
-    <button id="saveTemplate" class="btn btn-primary px-4" data-bs-toggle="modal"
-      data-bs-target="#templateModal">Guardar</button>
-    <!-- <div class="dropdown"> -->
-    <!-- <button class="btn btn-secondary dropdown-toggle" type="button" id="optionsMenuButton"
-                    data-bs-toggle="dropdown" aria-expanded="false">
-                    Options
-                </button> -->
-    <!-- <ul id="optionsMenu" class="dropdown-menu" aria-labelledby="optionsMenuButton"> -->
-    </ul>
-    <!-- </div> -->
-    <!-- <button id="saveTestButton" class="btn btn-primary px-4" style="display: none">Save Test</button> -->
+<div class="hstack p-2 gap-2 bg-light">
+  <input id="files" type="file" class="form-control" style="width: 50ch;" accept=".docx" />
+  <div class="col-2">
+    <select id="testDocuments" class="form-select">
+      <option disabled selected>-- Test Documents --</option>
+    </select>
   </div>
+  <!-- <button id="loadButton" class="btn btn-primary px-4">Reload</button> -->
+  <!-- <button id="saveTemplate" onclick="saveTemplate()" class="btn btn-primary px-4">Guardar</button> -->
+  <button id="saveTemplate" class="btn btn-primary px-4" data-bs-toggle="modal"
+    data-bs-target="#templateModal" >Guardar</button>
+  <button id="redirect-to-templates"  hx-get="/document/templates" hx-trigger="click" hx-target="#page" style="display: none;"></button>
 
-  <div class="flex-grow-1 d-flex flex-row" style="height: 0;">
-    <details class="docx-thumbnails h-100">
-      <summary></summary>
-      <div id="thumbnails-container" class="docx-thumbnails-container"></div>
-    </details>
-    <div id="document-container" class="overflow-auto flex-grow-1 h-100"></div>
-  </div>
+  <!-- <div class="dropdown"> -->
+  <!-- <button class="btn btn-secondary dropdown-toggle" type="button" id="optionsMenuButton"
+                  data-bs-toggle="dropdown" aria-expanded="false">
+                  Options
+              </button> -->
+  <!-- <ul id="optionsMenu" class="dropdown-menu" aria-labelledby="optionsMenuButton"> -->
+  </ul>
+  <!-- </div> -->
+  <!-- <button id="saveTestButton" class="btn btn-primary px-4" style="display: none">Save Test</button> -->
+</div>
 
-  <div class="modal fade" id="templateModal" tabindex="-1" aria-labelledby="templateModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="templateModalLabel">Enter Template Name</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <input type="text" id="templateName" class="form-control" placeholder="Template Name">
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <button type="button" class="btn btn-primary" onclick="saveTemplate()">Save Template</button>
-        </div>
+<div class="flex-grow-1 d-flex flex-row" style="height: 0;">
+  <details class="docx-thumbnails h-100">
+    <summary></summary>
+    <div id="thumbnails-container" class="docx-thumbnails-container"></div>
+  </details>
+  <div id="document-container" class="overflow-auto flex-grow-1 h-100"></div>
+</div>
+
+<div class="modal fade" id="templateModal" tabindex="-1" aria-labelledby="templateModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="templateModalLabel">Enter Template Name</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <input type="text" id="templateName" class="form-control" placeholder="Template Name">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="saveTemplate()" data-bs-dismiss="modal">Save Template</button>
       </div>
     </div>
   </div>
+</div>
 
 
-  <script>
-    let repString = {};
-    let repeatedID = 1;
-    let currentDocument = null;
+<script>
+  let repString = {};
+  let repeatedID = 1;
+  let currentDocument = null;
 
-    const docxOptions = Object.assign(docx.defaultOptions, {
-      debug: true,
-      experimental: true
+  const docxOptions = Object.assign(docx.defaultOptions, {
+    debug: true,
+    experimental: true
+  });
+
+  const container = document.querySelector("#document-container");
+  const fileInput = document.querySelector("#files");
+  const loadButton = document.querySelector("#loadButton");
+  const testDocuments = document.querySelector("#testDocuments");
+
+  async function renderDocx(file) {
+    currentDocument = file;
+
+    if (!currentDocument)
+      return;
+
+    // optional, find and convert all tiff images
+    let docxBlob = preprocessTiff(currentDocument);
+    // render document
+    let res = await docx.renderAsync(docxBlob, container, null, docxOptions)
+    // optional - render thumbnails
+    renderThumbnails(container, document.querySelector("#thumbnails-container"));
+    console.log(res);
+  }
+
+  fileInput.addEventListener("change", ev => {
+    renderDocx(fileInput.files[0]);
+    testDocuments.selectedIndex = 0;
+  });
+  loadButton.addEventListener("click", ev => renderDocx(fileInput.files[0]));
+
+  const menu = document.querySelector("#optionsMenu");
+
+  Object.keys(docxOptions).filter(key => !/className/i.test(key)).forEach(function (key) {
+    const listItem = document.createElement("li");
+    listItem.innerHTML = `
+              <div class="dropdown-item">
+                  <div class="form-check">
+                      <label class="form-check-name"><input type="checkbox" class="form-check-input" ${docxOptions[key] ? 'checked' : ''}> ${key}</label>
+                  </div>
+              </div>`;
+
+    const checkInput = listItem.querySelector("input");
+
+    checkInput.addEventListener("click", (e) => {
+      docxOptions[key] = checkInput.checked;
+      renderDocx(currentDocument);
     });
 
-    const container = document.querySelector("#document-container");
-    const fileInput = document.querySelector("#files");
-    const loadButton = document.querySelector("#loadButton");
-    const testDocuments = document.querySelector("#testDocuments");
+    menu.appendChild(listItem);
+  });
 
-    async function renderDocx(file) {
-      currentDocument = file;
+  container.addEventListener("dragover", ev => ev.preventDefault());
+  container.addEventListener("drop", ev => {
+    ev.preventDefault();
+    renderDocx(ev.dataTransfer.files[0]);
+  });
 
-      if (!currentDocument)
-        return;
+  for (let testName of ['text', 'underlines', 'text-break', 'line-spacing', 'numbering', 'page-layout', 'table', 'table-spans', 'footnote', 'header-footer', 'revision', 'equation']) {
+    var op = document.createElement("option");
+    op.label = testName;
+    testDocuments.add(op);
+  }
 
-      // optional, find and convert all tiff images
-      let docxBlob = preprocessTiff(currentDocument);
-      // render document
-      let res = await docx.renderAsync(docxBlob, container, null, docxOptions)
-      // optional - render thumbnails
-      renderThumbnails(container, document.querySelector("#thumbnails-container"));
-      console.log(res);
+  testDocuments.addEventListener("change", async e => {
+    const selected = testDocuments.selectedOptions[0].label;
+
+    if (selected) {
+      let resp = await fetch(`tests/render-test/${selected}/document.docx`);
+      renderDocx(await resp.blob());
+      fileInput.value = "";
+    }
+  });
+
+  document.querySelector("#saveTestButton").addEventListener("click", async () => {
+    const file = await showSaveFilePicker({ types: [{ description: "HTML File", accept: { "text/html": [".html"] } }] });
+    const stream = await file.createWritable();
+    await stream.write(container.innerHTML);
+    await stream.close();
+  });
+
+  function saveTemplate() {
+    const templateName = document.getElementById('templateName').value;
+    const container = document.getElementById('document-container');
+
+    if (!templateName) {
+      alert("Please enter a template name.");
+      return;
     }
 
-    fileInput.addEventListener("change", ev => {
-      renderDocx(fileInput.files[0]);
-      testDocuments.selectedIndex = 0;
-    });
-    loadButton.addEventListener("click", ev => renderDocx(fileInput.files[0]));
+    if (container) {
+      const htmlContent = container.innerHTML;
 
-    const menu = document.querySelector("#optionsMenu");
+      const params = new URLSearchParams();
+      params.append('html', htmlContent);
+      params.append('templateName', templateName);
 
-    Object.keys(docxOptions).filter(key => !/className/i.test(key)).forEach(function (key) {
-      const listItem = document.createElement("li");
-      listItem.innerHTML = `
-                <div class="dropdown-item">
-                    <div class="form-check">
-                        <label class="form-check-name"><input type="checkbox" class="form-check-input" ${docxOptions[key] ? 'checked' : ''}> ${key}</label>
-                    </div>
-                </div>`;
-
-      const checkInput = listItem.querySelector("input");
-
-      checkInput.addEventListener("click", (e) => {
-        docxOptions[key] = checkInput.checked;
-        renderDocx(currentDocument);
-      });
-
-      menu.appendChild(listItem);
-    });
-
-    container.addEventListener("dragover", ev => ev.preventDefault());
-    container.addEventListener("drop", ev => {
-      ev.preventDefault();
-      renderDocx(ev.dataTransfer.files[0]);
-    });
-
-    for (let testName of ['text', 'underlines', 'text-break', 'line-spacing', 'numbering', 'page-layout', 'table', 'table-spans', 'footnote', 'header-footer', 'revision', 'equation']) {
-      var op = document.createElement("option");
-      op.label = testName;
-      testDocuments.add(op);
-    }
-
-    testDocuments.addEventListener("change", async e => {
-      const selected = testDocuments.selectedOptions[0].label;
-
-      if (selected) {
-        let resp = await fetch(`tests/render-test/${selected}/document.docx`);
-        renderDocx(await resp.blob());
-        fileInput.value = "";
-      }
-    });
-
-    document.querySelector("#saveTestButton").addEventListener("click", async () => {
-      const file = await showSaveFilePicker({ types: [{ description: "HTML File", accept: { "text/html": [".html"] } }] });
-      const stream = await file.createWritable();
-      await stream.write(container.innerHTML);
-      await stream.close();
-    });
-
-    function saveTemplate() {
-      const templateName = document.getElementById('templateName').value;
-      const container = document.getElementById('document-container');
-
-      if (!templateName) {
-        alert("Please enter a template name.");
-        return;
-      }
-
-      if (container) {
-        const htmlContent = container.innerHTML;
-
-        const params = new URLSearchParams();
-        params.append('html', htmlContent);
-        params.append('templateName', templateName);
-
-        fetch('/document/template/save', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-          },
-          body: params
-        })
-          .then(response => {
-            // if (!response.ok) {
-            //   throw new Error(`HTTP error! status: ${response.status}`);
-            // }
-            // // Check if the server responded with a 303 See Other status
-            // if (response.status === 303) {
-            //   // Extract the redirection URL from the 'Location' header
-            //   const redirectUrl = response.headers.get('Location');
-            //   if (redirectUrl) {
-            //     // Perform the redirection using JavaScript
-            //     console.log(redirectUrl);
-            //     window.location.href = redirectUrl;
-            //   } else {
-            //     console.error("No redirection URL found in response headers.");
-            //   }
-            // } else {
-            //   // Handle other successful responses (e.g., 201 Created)
-            //   return response.text();
-            // }
+      fetch('/document/template/save', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: params,
+      })
+        .then(response => {
+          if (response.ok) {
+            document.getElementById("redirect-to-templates").click();
             console.log("All Good!!")
-          })
-          .then(data => {
-            console.log('Success:', data);
-            // Close the modal after successful save
-            const modal = bootstrap.Modal.getInstance(document.getElementById('templateModal'));
-            modal.hide();
-          })
-          .catch((error) => {
-            console.error('Error:', error);
-            alert("An error occurred while saving the template."); // Alert user on error
-          });
-      } else {
-        console.error("Element not found!");
-      }
+
+          }
+
+        })
+        .then(data => {
+          console.log('Success:', data);
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+          alert("An error occurred while saving the template."); // Alert user on error
+        });
+    } else {
+      console.error("Element not found!");
     }
-    /// =========================
-    /// BUTTON KUNG-FU
-    /// =========================
+  }
+  /// =========================
+  /// BUTTON KUNG-FU
+  /// =========================
 
-    // let art = document.getElementsByTagName("article")[0].innerHTML
-    function fixedString() {
-      let article = document.getElementsByTagName("article")[0].innerHTML;
+  // let art = document.getElementsByTagName("article")[0].innerHTML
+  function fixedString() {
+    let article = document.getElementsByTagName("article")[0].innerHTML;
 
-      let repeatStart = article.indexOf('[repeat[[');
-      let repeatEnd = article.indexOf(']]]');
-      let repeatString = article.substring(repeatStart + 9, repeatEnd);
-      // let fixedString = ''
+    let repeatStart = article.indexOf('[repeat[[');
+    let repeatEnd = article.indexOf(']]]');
+    let repeatString = article.substring(repeatStart + 9, repeatEnd);
+    // let fixedString = ''
 
-      if (repeatString.indexOf("</") == 0) {
-        let closingTag = repeatString.indexOf(">")
-        repeatString = repeatString.substring(closingTag + 1)
-      }
+    if (repeatString.indexOf("</") == 0) {
+      let closingTag = repeatString.indexOf(">")
+      repeatString = repeatString.substring(closingTag + 1)
+    }
 
-      const repeatEndIdx = article.indexOf('<', article.indexOf(']]]'))
+    const repeatEndIdx = article.indexOf('<', article.indexOf(']]]'))
 
-      if (article[repeatEndIdx + 1] == '/') {
-        console.log(repeatEndIdx)
-        console.log(repeatString);
-        let missing = article.substring(article.indexOf(']]]') + 3, article.indexOf('>', repeatEndIdx) + 1);
-        console.log(missing);
-        // fixedString = fixedString + fixedString.substring(article.indexOf(']]]')+3, article.indexOf('>', repeatEndIdx)+1);
-        repeatString = repeatString + missing;
-        console.log(repeatString);
-      }
-
-      article = article.replace('[repeat[[', '');
-      article = article.replace(']]]', '');
-
-      const replaceIndexStart = article.indexOf(repeatString);
-      console.log(replaceIndexStart);
-      console.log('============');
+    if (article[repeatEndIdx + 1] == '/') {
+      console.log(repeatEndIdx)
       console.log(repeatString);
-      console.log('============');
-
-      return repeatString;
+      let missing = article.substring(article.indexOf(']]]') + 3, article.indexOf('>', repeatEndIdx) + 1);
+      console.log(missing);
+      // fixedString = fixedString + fixedString.substring(article.indexOf(']]]')+3, article.indexOf('>', repeatEndIdx)+1);
+      repeatString = repeatString + missing;
+      console.log(repeatString);
     }
 
-    function insertButton(article) {
-      // article = article.replace(repeatString, `<div><button onclick="this.parentElement.innerHTML = '${repeatString.replace(/'/g, "\\'")}';">Agregar</button></div>`);
+    article = article.replace('[repeat[[', '');
+    article = article.replace(']]]', '');
 
-      let repeatString = fixedString();
-      article = article.replace('[repeat[[', '');
-      article = article.replace(']]]', '');
-      repString[repeatedID++] = repeatString;
-      return article.replaceAll(repeatString, `<div><button id='a1' onclick="replaceHTML('a1')">Agregar</button></div>`);
-    }
+    const replaceIndexStart = article.indexOf(repeatString);
+    console.log(replaceIndexStart);
+    console.log('============');
+    console.log(repeatString);
+    console.log('============');
 
-    function replaceHTML(elementId) {
-      let idx = repeatedID - 1;
-      elem = document.getElementById(elementId);
-      elem.outerHTML = repString[idx]
-    }
+    return repeatString;
+  }
 
-    /// =========================
-    /// BUTTON KUNG-FU END
-    /// =========================
+  function insertButton(article) {
+    // article = article.replace(repeatString, `<div><button onclick="this.parentElement.innerHTML = '${repeatString.replace(/'/g, "\\'")}';">Agregar</button></div>`);
 
+    let repeatString = fixedString();
+    article = article.replace('[repeat[[', '');
+    article = article.replace(']]]', '');
+    repString[repeatedID++] = repeatString;
+    return article.replaceAll(repeatString, `<div><button id='a1' onclick="replaceHTML('a1')">Agregar</button></div>`);
+  }
 
-  </script>
-</body>
+  function replaceHTML(elementId) {
+    let idx = repeatedID - 1;
+    elem = document.getElementById(elementId);
+    elem.outerHTML = repString[idx]
+  }
 
-</html>
+  /// =========================
+  /// BUTTON KUNG-FU END
+  /// =========================
+</script>
