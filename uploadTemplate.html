@@ -5,19 +5,14 @@
       <option disabled selected>-- Test Documents --</option>
     </select>
   </div>
-  <!-- <button id="loadButton" class="btn btn-primary px-4">Reload</button> -->
-  <!-- <button id="saveTemplate" onclick="saveTemplate()" class="btn btn-primary px-4">Guardar</button> -->
   <button id="saveTemplate" class="btn btn-primary px-4" data-bs-toggle="modal"
     data-bs-target="#templateModal" >Guardar</button>
   <button id="redirect-to-templates"  hx-get="/document/templates" hx-trigger="click" hx-target="#page" style="display: none;"></button>
-
-  <!-- <div class="dropdown"> -->
-  <!-- <button class="btn btn-secondary dropdown-toggle" type="button" id="optionsMenuButton"
-                  data-bs-toggle="dropdown" aria-expanded="false">
-                  Options
-              </button> -->
-  <!-- <ul id="optionsMenu" class="dropdown-menu" aria-labelledby="optionsMenuButton"> -->
   </ul>
+  </ul>
+  <!-- </div> -->
+  <!-- <button id="saveTestButton" class="btn btn-primary px-4" style="display: none">Save Test</button> -->
+    </ul>
   <!-- </div> -->
   <!-- <button id="saveTestButton" class="btn btn-primary px-4" style="display: none">Save Test</button> -->
 </div>
@@ -50,6 +45,10 @@
 
 
 <script>
+  // CUSTOM EVENTS
+  const onDocumentLoad = new Event("documentLoaded");
+
+
   let repString = {};
   let repeatedID = 1;
   let currentDocument = null;
@@ -61,8 +60,12 @@
 
   const container = document.querySelector("#document-container");
   const fileInput = document.querySelector("#files");
-  const loadButton = document.querySelector("#loadButton");
   const testDocuments = document.querySelector("#testDocuments");
+
+  container.addEventListener("documentLoaded", function() {
+    insertButton();
+  });
+
 
   async function renderDocx(file) {
     currentDocument = file;
@@ -74,36 +77,13 @@
     let docxBlob = preprocessTiff(currentDocument);
     // render document
     let res = await docx.renderAsync(docxBlob, container, null, docxOptions)
-    // optional - render thumbnails
-    renderThumbnails(container, document.querySelector("#thumbnails-container"));
     console.log(res);
+    container.dispatchEvent(onDocumentLoad);
   }
 
   fileInput.addEventListener("change", ev => {
     renderDocx(fileInput.files[0]);
     testDocuments.selectedIndex = 0;
-  });
-  loadButton.addEventListener("click", ev => renderDocx(fileInput.files[0]));
-
-  const menu = document.querySelector("#optionsMenu");
-
-  Object.keys(docxOptions).filter(key => !/className/i.test(key)).forEach(function (key) {
-    const listItem = document.createElement("li");
-    listItem.innerHTML = `
-              <div class="dropdown-item">
-                  <div class="form-check">
-                      <label class="form-check-name"><input type="checkbox" class="form-check-input" ${docxOptions[key] ? 'checked' : ''}> ${key}</label>
-                  </div>
-              </div>`;
-
-    const checkInput = listItem.querySelector("input");
-
-    checkInput.addEventListener("click", (e) => {
-      docxOptions[key] = checkInput.checked;
-      renderDocx(currentDocument);
-    });
-
-    menu.appendChild(listItem);
   });
 
   container.addEventListener("dragover", ev => ev.preventDefault());
@@ -112,29 +92,10 @@
     renderDocx(ev.dataTransfer.files[0]);
   });
 
-  for (let testName of ['text', 'underlines', 'text-break', 'line-spacing', 'numbering', 'page-layout', 'table', 'table-spans', 'footnote', 'header-footer', 'revision', 'equation']) {
-    var op = document.createElement("option");
-    op.label = testName;
-    testDocuments.add(op);
-  }
 
-  testDocuments.addEventListener("change", async e => {
-    const selected = testDocuments.selectedOptions[0].label;
-
-    if (selected) {
-      let resp = await fetch(`tests/render-test/${selected}/document.docx`);
-      renderDocx(await resp.blob());
-      fileInput.value = "";
-    }
-  });
-
-  document.querySelector("#saveTestButton").addEventListener("click", async () => {
-    const file = await showSaveFilePicker({ types: [{ description: "HTML File", accept: { "text/html": [".html"] } }] });
-    const stream = await file.createWritable();
-    await stream.write(container.innerHTML);
-    await stream.close();
-  });
-
+  /// =========================
+  // SEND DOCUMENT TO THE SERVER START
+  /// =========================
   function saveTemplate() {
     const templateName = document.getElementById('templateName').value;
     const container = document.getElementById('document-container');
@@ -162,9 +123,7 @@
           if (response.ok) {
             document.getElementById("redirect-to-templates").click();
             console.log("All Good!!")
-
           }
-
         })
         .then(data => {
           console.log('Success:', data);
@@ -177,6 +136,11 @@
       console.error("Element not found!");
     }
   }
+
+  /// =========================
+  // SEND DOCUMENT TO THE SERVER END
+  /// =========================
+
   /// =========================
   /// BUTTON KUNG-FU
   /// =========================
@@ -219,14 +183,18 @@
     return repeatString;
   }
 
-  function insertButton(article) {
+  function insertButton() {
     // article = article.replace(repeatString, `<div><button onclick="this.parentElement.innerHTML = '${repeatString.replace(/'/g, "\\'")}';">Agregar</button></div>`);
 
+    let documentContainer = document.getElementsByTagName("article")[0]
+    let mutatedDoc = documentContainer.innerHTML;
     let repeatString = fixedString();
-    article = article.replace('[repeat[[', '');
-    article = article.replace(']]]', '');
+
+    mutatedDoc =  mutatedDoc.replace('[repeat[[', '');
+    mutatedDoc =  mutatedDoc.replace(']]]', '');
     repString[repeatedID++] = repeatString;
-    return article.replaceAll(repeatString, `<div><button id='a1' onclick="replaceHTML('a1')">Agregar</button></div>`);
+    // return mutatedDoc.replaceAll(repeatString, `<div><button id='a1' onclick="replaceHTML('a1')">Agregar</button></div>`);
+    documentContainer.innerHTML = mutatedDoc.replaceAll(repeatString, `<div><button id='a1' onclick="replaceHTML('a1')">Agregar</button></div>`);
   }
 
   function replaceHTML(elementId) {
