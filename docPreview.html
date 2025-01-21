@@ -1,0 +1,165 @@
+<div class="hstack p-2 gap-2 bg-light">
+  <input id="files" type="file" class="form-control" style="width: 50ch;" accept=".docx" />
+  <div class="col-2">
+    <select id="testDocuments" class="form-select">
+      <option disabled selected>-- Test Documents --</option>
+    </select>
+  </div>
+  <button id="saveTemplate" class="btn btn-primary px-4" data-bs-toggle="modal"
+    data-bs-target="#templateModal">Guardar</button>
+  <button id="redirect-to-templates" hx-get="/document/templates" hx-trigger="click" hx-target="#page"
+    style="display: none;"></button>
+  </ul>
+  </ul>
+  <!-- </div> -->
+  <!-- <button id="saveTestButton" class="btn btn-primary px-4" style="display: none">Save Test</button> -->
+  </ul>
+  <!-- </div> -->
+  <!-- <button id="saveTestButton" class="btn btn-primary px-4" style="display: none">Save Test</button> -->
+</div>
+
+<div class="flex-grow-1 d-flex flex-row" style="height: 0;">
+  <details class="docx-thumbnails h-100">
+    <summary></summary>
+    <div id="thumbnails-container" class="docx-thumbnails-container"></div>
+  </details>
+  <div id="document-container" class="overflow-auto flex-grow-1 h-100">
+    {{.Template}}
+  </div>
+</div>
+
+<div class="modal fade" id="templateModal" tabindex="-1" aria-labelledby="templateModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="templateModalLabel">Enter Template Name</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <input type="text" id="templateName" class="form-control" placeholder="Template Name">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="saveTemplate()" data-bs-dismiss="modal">Save
+          Template</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+  // CUSTOM EVENTS
+  const onDocumentLoad = new Event("documentLoaded");
+
+  let repString = {};
+  let repeatedID = 1;
+  let currentDocument = null;
+
+  const docxOptions = Object.assign(docx.defaultOptions, {
+    debug: true,
+    experimental: true
+  });
+
+  const container = document.querySelector("#document-container");
+  const fileInput = document.querySelector("#files");
+  const testDocuments = document.querySelector("#testDocuments");
+
+  container.addEventListener("documentLoaded", function () {
+    insertButton();
+  });
+
+
+  async function renderDocx(file) {
+    currentDocument = file;
+
+    if (!currentDocument)
+      return;
+
+    // optional, find and convert all tiff images
+    let docxBlob = preprocessTiff(currentDocument);
+    // render document
+    let res = await docx.renderAsync(docxBlob, container, null, docxOptions)
+    console.log(res);
+    container.dispatchEvent(onDocumentLoad);
+  }
+
+  fileInput.addEventListener("change", ev => {
+    renderDocx(fileInput.files[0]);
+    testDocuments.selectedIndex = 0;
+  });
+
+  container.addEventListener("dragover", ev => ev.preventDefault());
+  container.addEventListener("drop", ev => {
+    ev.preventDefault();
+    renderDocx(ev.dataTransfer.files[0]);
+  });
+
+  /// =========================
+  /// BUTTON KUNG-FU
+  /// =========================
+
+  // let art = document.getElementsByTagName("article")[0].innerHTML
+  function fixedString() {
+    let article = document.getElementsByTagName("article")[0].innerHTML;
+
+    let repeatStart = article.indexOf('[repeat[[');
+    let repeatEnd = article.indexOf(']]]');
+    let repeatString = article.substring(repeatStart + 9, repeatEnd);
+    // let fixedString = ''
+
+    if (repeatString.indexOf("</") == 0) {
+      let closingTag = repeatString.indexOf(">")
+      repeatString = repeatString.substring(closingTag + 1)
+    }
+
+    const repeatEndIdx = article.indexOf('<', article.indexOf(']]]'))
+
+    if (article[repeatEndIdx + 1] == '/') {
+      console.log(repeatEndIdx)
+      console.log(repeatString);
+      let missing = article.substring(article.indexOf(']]]') + 3, article.indexOf('>', repeatEndIdx) + 1);
+      console.log(missing);
+      // fixedString = fixedString + fixedString.substring(article.indexOf(']]]')+3, article.indexOf('>', repeatEndIdx)+1);
+      repeatString = repeatString + missing;
+      console.log(repeatString);
+    }
+
+    article = article.replace('[repeat[[', '');
+    article = article.replace(']]]', '');
+
+    const replaceIndexStart = article.indexOf(repeatString);
+    console.log(replaceIndexStart);
+    console.log('============');
+    console.log(repeatString);
+    console.log('============');
+
+    return repeatString;
+  }
+
+  function insertButton() {
+    // article = article.replace(repeatString, `<div><button onclick="this.parentElement.innerHTML = '${repeatString.replace(/'/g, "\\'")}';">Agregar</button></div>`);
+
+    let documentContainer = document.getElementsByTagName("article")[0]
+    let mutatedDoc = documentContainer.innerHTML;
+    let repeatString = fixedString();
+
+    mutatedDoc = mutatedDoc.replace('[repeat[[', '');
+    mutatedDoc = mutatedDoc.replace(']]]', '');
+    let buttonHtml = `<div id='a-${repeatedID}'><button onclick="replaceHTML('a-${repeatedID}')">Agregar</button></div>`
+    repString[repeatedID] = `<div> ${repeatString} </div> ${buttonHtml}`;
+    repeatedID++;
+    // return mutatedDoc.replaceAll(repeatString, `<div><button id='a1' onclick="replaceHTML('a1')">Agregar</button></div>`);
+    documentContainer.innerHTML = mutatedDoc.replaceAll(repeatString, buttonHtml);
+  }
+
+  function replaceHTML(elementId) {
+    let idx = elementId.split('-')[1];
+    elem = document.getElementById(elementId);
+    elem.outerHTML = repString[idx]
+  }
+
+  /// =========================
+  /// BUTTON KUNG-FU END
+  /// =========================
+</script>

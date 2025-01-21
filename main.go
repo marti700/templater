@@ -29,11 +29,12 @@ func main() {
 	http.HandleFunc("/customer/select", customer.SelectCustomer(dbConfig, "customer-selection.html"))
 
 	// Document routes
-	http.HandleFunc("/document", document.DocumentPreview("./tmpls/", "./sections.html"))
+	// http.HandleFunc("/document", document.DocumentPreview("./tmpls/", "./sections.html"))
 	http.HandleFunc("/document/create", document.CreteDocument("./tmpls/"))
 	http.HandleFunc("/document/template/upload", document.Uploadtemplate("./tmpls/", "./uploadTemplate.html"))
 	http.HandleFunc("/document/template/save", document.SaveTemplate(dbConfig))
 	http.HandleFunc("/document/templates", document.GetTemplatesList(dbConfig, "./templates.html"))
+	http.HandleFunc("/document/template", document.DocumentPreview(dbConfig, "./docPreview.html"))
 	http.HandleFunc("/document/new", document.NewDocument("./tmpls/", "./document-selection.html"))
 	http.HandleFunc("/document/sections/add", document.NewSection("./tmpls/"))
 

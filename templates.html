@@ -1,38 +1,35 @@
-<div>
-    <button type="button" id="upload" class="btn btn-primary" hx-get="/document/template/upload" hx-trigger="click" hx-target="#page">Agregar</button>
-</div>
-<!-- <form method="POST" action="/document/template/upload" enctype="multipart/form-data">
-    <input type="file" id="myFile" name="template">
-    <div id=sections>
-        <div id="element-dummy"></div>
-        <button type="button" hx-swap="beforebegin" hx-target="#element-dummy" hx-get="/document/sections/add">Agregar secciones</button>
-    </div>
-    <input type="submit">
-</form> -->
-
 <div class="container" id="see">
-    <div id="table">
+    <div>
+        <button type="button" id="upload" class="btn btn-primary" hx-get="/document/template/upload" hx-trigger="click"
+            hx-target="#page">Agregar</button>
+    </div>
+    <div id="templates-table">
         <table>
             <thead>
                 <tr>
                     <th>Name</th>
+                    <th>Acciones</th>
                 </tr>
             </thead>
             {{range .}}
             <tr>
                 <td>{{.Name}}</td>
+                <td>
+                    <button hx-get="/document/template?name={{.Name}}"
+                        hx-target="#page">Abrir</button>
+                </td>
             </tr>
             {{end}}
         </table>
     </div>
-    <div id="tables"></div>
+    <div id="templates"></div>
 </div>
 
 <!-- <script src="https://cdn.jsdelivr.net/npm/gridjs@5.1.0/dist/gridjs.umd.js"></script> -->
 
 <script>
     if (typeof customerTable == 'undefined') {
-        const customerTable = document.getElementById("table");
+        const customerTable = document.getElementById("templates-table");
 
         var grid = new gridjs.Grid({
             from: customerTable,
@@ -40,6 +37,6 @@
         });
     }
 
-    grid.on('ready', function () { console.log("bien!!!"); });
-    grid.render(document.getElementById("tables"));
+    grid.on('ready', function () { htmx.process(document.getElementById("templates")); });
+    grid.render(document.getElementById("templates"));
 </script>

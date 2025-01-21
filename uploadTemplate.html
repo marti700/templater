@@ -45,12 +45,6 @@
 
 
 <script>
-  // CUSTOM EVENTS
-  const onDocumentLoad = new Event("documentLoaded");
-
-
-  let repString = {};
-  let repeatedID = 1;
   let currentDocument = null;
 
   const docxOptions = Object.assign(docx.defaultOptions, {
@@ -78,7 +72,6 @@
     // render document
     let res = await docx.renderAsync(docxBlob, container, null, docxOptions)
     console.log(res);
-    container.dispatchEvent(onDocumentLoad);
   }
 
   fileInput.addEventListener("change", ev => {
@@ -137,75 +130,4 @@
     }
   }
 
-  /// =========================
-  // SEND DOCUMENT TO THE SERVER END
-  /// =========================
-
-  /// =========================
-  /// BUTTON KUNG-FU
-  /// =========================
-
-  // let art = document.getElementsByTagName("article")[0].innerHTML
-  function fixedString() {
-    let article = document.getElementsByTagName("article")[0].innerHTML;
-
-    let repeatStart = article.indexOf('[repeat[[');
-    let repeatEnd = article.indexOf(']]]');
-    let repeatString = article.substring(repeatStart + 9, repeatEnd);
-    // let fixedString = ''
-
-    if (repeatString.indexOf("</") == 0) {
-      let closingTag = repeatString.indexOf(">")
-      repeatString = repeatString.substring(closingTag + 1)
-    }
-
-    const repeatEndIdx = article.indexOf('<', article.indexOf(']]]'))
-
-    if (article[repeatEndIdx + 1] == '/') {
-      console.log(repeatEndIdx)
-      console.log(repeatString);
-      let missing = article.substring(article.indexOf(']]]') + 3, article.indexOf('>', repeatEndIdx) + 1);
-      console.log(missing);
-      // fixedString = fixedString + fixedString.substring(article.indexOf(']]]')+3, article.indexOf('>', repeatEndIdx)+1);
-      repeatString = repeatString + missing;
-      console.log(repeatString);
-    }
-
-    article = article.replace('[repeat[[', '');
-    article = article.replace(']]]', '');
-
-    const replaceIndexStart = article.indexOf(repeatString);
-    console.log(replaceIndexStart);
-    console.log('============');
-    console.log(repeatString);
-    console.log('============');
-
-    return repeatString;
-  }
-
-  function insertButton() {
-    // article = article.replace(repeatString, `<div><button onclick="this.parentElement.innerHTML = '${repeatString.replace(/'/g, "\\'")}';">Agregar</button></div>`);
-
-    let documentContainer = document.getElementsByTagName("article")[0]
-    let mutatedDoc = documentContainer.innerHTML;
-    let repeatString = fixedString();
-
-    mutatedDoc =  mutatedDoc.replace('[repeat[[', '');
-    mutatedDoc =  mutatedDoc.replace(']]]', '');
-    let buttonHtml = `<div id='a-${repeatedID}'><button onclick="replaceHTML('a-${repeatedID}')">Agregar</button></div>`
-    repString[repeatedID] = `<div> ${repeatString} </div> ${buttonHtml}`;
-    repeatedID++;
-    // return mutatedDoc.replaceAll(repeatString, `<div><button id='a1' onclick="replaceHTML('a1')">Agregar</button></div>`);
-    documentContainer.innerHTML = mutatedDoc.replaceAll(repeatString, buttonHtml);
-  }
-
-  function replaceHTML(elementId) {
-    let idx = elementId.split('-')[1];
-    elem = document.getElementById(elementId);
-    elem.outerHTML = repString[idx]
-  }
-
-  /// =========================
-  /// BUTTON KUNG-FU END
-  /// =========================
-</script>
+  </script>

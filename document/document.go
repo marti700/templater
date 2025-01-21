@@ -10,7 +10,7 @@ import (
 	"strings"
 	"text/template"
 
-	"code.sajari.com/docconv/v2"
+	// "code.sajari.com/docconv/v2"
 	"github.com/lukasjarosch/go-docx"
 	"github.com/marti700/templater/conf"
 	"github.com/marti700/templater/customer"
@@ -107,28 +107,64 @@ func stringStringToIntfMap(strMap map[string][]string) map[string]interface{} {
 	return intfMap
 }
 
-func DocumentPreview(templatesFolderPath string, viewTemplatesPath string) func(http.ResponseWriter, *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
-		templateName := r.URL.Query()["template"][0]
-		res, err := docconv.ConvertPath(templatesFolderPath + templateName)
-		if err != nil {
-			// log.Fatal(err.Error())
-			fmt.Println(err.Error())
-		}
-		// fmt.Println(res.Body)
+// func DocumentPreview(templatesFolderPath string, viewTemplatesPath string) func(http.ResponseWriter, *http.Request) {
+// 	return func(w http.ResponseWriter, r *http.Request) {
+// 		templateName := r.URL.Query()["template"][0]
+// 		res, err := docconv.ConvertPath(templatesFolderPath + templateName)
+// 		if err != nil {
+// 			// log.Fatal(err.Error())
+// 			fmt.Println(err.Error())
+// 		}
+// 		// fmt.Println(res.Body)
 
-		additionalAttributes := `type="image" hx-trigger="click" hx-target="#customer-selection" hx-get="/customer/select" data-bs-toggle="modal" data-bs-target="#customer-selection" src="https://upload.wikimedia.org/wikipedia/commons/0/0e/Add_user_icon_%28blue%29.svg" style="cursor: pointer; width: 2%; height: 2%;"`
-		metadata := DocMetadata{
-			Document: replaceEmptyLines(replaceImgPlaceHolders(replaceDropdownPlaceholders(replaceInputPlaceholders(res.Body)), additionalAttributes)),
-			Template: templateName,
+// 		additionalAttributes := `type="image" hx-trigger="click" hx-target="#customer-selection" hx-get="/customer/select" data-bs-toggle="modal" data-bs-target="#customer-selection" src="https://upload.wikimedia.org/wikipedia/commons/0/0e/Add_user_icon_%28blue%29.svg" style="cursor: pointer; width: 2%; height: 2%;"`
+// 		metadata := DocMetadata{
+// 			Document: replaceEmptyLines(replaceImgPlaceHolders(replaceDropdownPlaceholders(replaceInputPlaceholders(res.Body)), additionalAttributes)),
+// 			Template: templateName,
+// 		}
+
+// 		tmpl := template.Must(template.ParseFiles(viewTemplatesPath))
+// 		err = tmpl.Execute(w, metadata)
+// 		if err != nil {
+// 			log.Fatal(err.Error())
+// 		}
+// 	}
+// }
+
+func DocumentPreview(dbconf conf.DBConfig, viewTemplatesPath string) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		docName := r.URL.Query()["name"][0]
+
+		doc, err := findDocumentsByName(dbconf, docName)
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 
 		tmpl := template.Must(template.ParseFiles(viewTemplatesPath))
-		err = tmpl.Execute(w, metadata)
+		err = tmpl.Execute(w, doc)
 		if err != nil {
 			log.Fatal(err.Error())
 		}
 	}
+}
+
+func findDocumentsByName(dbconf conf.DBConfig, documentName string) (Document, error) {
+
+	db := dbconf.DbConn()
+	var d Document
+	stmt, err := db.Prepare("Select name, template from documents where name = $1")
+	if err != nil {
+		return Document{}, err
+
+	}
+
+	defer stmt.Close()
+	stmt.QueryRow(documentName).Scan(&d.Name, &d.Template)
+
+	return d, nil
 }
 
 func CreteDocument(templateFolderPath string) func(http.ResponseWriter, *http.Request) {
