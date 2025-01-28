@@ -113,7 +113,7 @@
   function replaceHTML(elementId) {
     let idx = elementId.split('-')[1];
     elem = document.getElementById(elementId);
-    elem.outerHTML = repString[idx]
+    elem.outerHTML = replaceCurlyBracesWithFormControls(repString[idx])
   }
   /// =========================
   /// BUTTON KUNG-FU END
