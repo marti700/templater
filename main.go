@@ -31,6 +31,7 @@ func main() {
 	// Document routes
 	// http.HandleFunc("/document", document.DocumentPreview("./tmpls/", "./sections.html"))
 	http.HandleFunc("/document/create", document.CreteDocument("./tmpls/"))
+	http.HandleFunc("/document/generate", document.GenerateDocument)
 	http.HandleFunc("/document/template/upload", document.Uploadtemplate("./tmpls/", "./uploadTemplate.html"))
 	http.HandleFunc("/document/template/save", document.SaveTemplate(dbConfig))
 	http.HandleFunc("/document/templates", document.GetTemplatesList(dbConfig, "./templates.html"))

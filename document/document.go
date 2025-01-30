@@ -167,6 +167,17 @@ func findDocumentsByName(dbconf conf.DBConfig, documentName string) (Document, e
 	return d, nil
 }
 
+func GenerateDocument(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	document := r.FormValue("html")
+	fmt.Println(document)
+}
+
 func CreteDocument(templateFolderPath string) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		templateName := r.URL.Query()["template"][0]

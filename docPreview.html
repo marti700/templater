@@ -1,21 +1,6 @@
 <div class="hstack p-2 gap-2 bg-light">
-  <input id="files" type="file" class="form-control" style="width: 50ch;" accept=".docx" />
-  <div class="col-2">
-    <select id="testDocuments" class="form-select">
-      <option disabled selected>-- Test Documents --</option>
-    </select>
-  </div>
-  <button id="saveTemplate" class="btn btn-primary px-4" data-bs-toggle="modal"
-    data-bs-target="#templateModal">Guardar</button>
-  <button id="redirect-to-templates" hx-get="/document/templates" hx-trigger="click" hx-target="#page"
-    style="display: none;"></button>
-  </ul>
-  </ul>
-  <!-- </div> -->
-  <!-- <button id="saveTestButton" class="btn btn-primary px-4" style="display: none">Save Test</button> -->
-  </ul>
-  <!-- </div> -->
-  <!-- <button id="saveTestButton" class="btn btn-primary px-4" style="display: none">Save Test</button> -->
+  <button id="confirm" onclick="requestDocumentgeneration()" class="btn btn-primary px-4">Confirmar</button>
+  <button id="cancel" class="btn btn-secondary px-4">Cancelar</button>
 </div>
 
 <div class="flex-grow-1 d-flex flex-row" style="height: 0;">
@@ -27,26 +12,6 @@
     {{.Template}}
   </div>
 </div>
-
-<div class="modal fade" id="templateModal" tabindex="-1" aria-labelledby="templateModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="templateModalLabel">Enter Template Name</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <input type="text" id="templateName" class="form-control" placeholder="Template Name">
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-        <button type="button" class="btn btn-primary" onclick="saveTemplate()" data-bs-dismiss="modal">Save
-          Template</button>
-      </div>
-    </div>
-  </div>
-</div>
-
 
 <script>
   let repString = {};
@@ -125,93 +90,133 @@
   /// ==================================
 
   function replaceCurlyBracesWithFormControls(htmlString) {
-  const tempDiv = document.createElement('div');
-  tempDiv.innerHTML = htmlString;
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = htmlString;
 
-  const elementsWithCurlyBraces = tempDiv.querySelectorAll('*');
+    const elementsWithCurlyBraces = tempDiv.querySelectorAll('*');
 
-  elementsWithCurlyBraces.forEach(element => {
-    // Get all text nodes within the element
-    const textNodes = Array.from(element.childNodes).filter(node => node.nodeType === Node.TEXT_NODE);
+    elementsWithCurlyBraces.forEach(element => {
+      // Get all text nodes within the element
+      const textNodes = Array.from(element.childNodes).filter(node => node.nodeType === Node.TEXT_NODE);
 
-    textNodes.forEach(textNode => {
-      let text = textNode.textContent;
-      let match;
-      let newNodes = [];
+      textNodes.forEach(textNode => {
+        let text = textNode.textContent;
+        let match;
+        let newNodes = [];
 
-      // Regular expression to find text within curly braces with optional attributes
-      const regex = /\{([^:]+):(input|drop);?([^}]*)\}/g;
+        // Regular expression to find text within curly braces with optional attributes
+        const regex = /\{([^:]+):(input|drop);?([^}]*)\}/g;
 
-      let lastIndex = 0;
-      while ((match = regex.exec(text)) !== null) {
-        const fullMatch = match[0];
-        const fieldName = match[1];
-        const inputType = match[2];
-        const attributesString = match[3];
-        let attributes = {};
+        let lastIndex = 0;
+        while ((match = regex.exec(text)) !== null) {
+          const fullMatch = match[0];
+          const fieldName = match[1];
+          const inputType = match[2];
+          const attributesString = match[3];
+          let attributes = {};
 
-        if(attributesString){
+          if (attributesString) {
             const attributePairs = attributesString.split(';');
             attributePairs.forEach(pair => {
-                const [key, value] = pair.split('=');
-                if(key && value){
-                    attributes[key.trim()] = value.trim();
-                }
+              const [key, value] = pair.split('=');
+              if (key && value) {
+                attributes[key.trim()] = value.trim();
+              }
             });
-        }
+          }
 
-        // Add the text before the match
-        if (match.index > lastIndex) {
-          newNodes.push(document.createTextNode(text.substring(lastIndex, match.index)));
-        }
+          // Add the text before the match
+          if (match.index > lastIndex) {
+            newNodes.push(document.createTextNode(text.substring(lastIndex, match.index)));
+          }
 
-        let inputElement;
-        if(inputType === "input"){
+          let inputElement;
+          if (inputType === "input") {
             inputElement = document.createElement('input');
             inputElement.type = 'text';
             inputElement.name = fieldName;
             inputElement.id = fieldName;
-            for(const key in attributes){
-                inputElement.setAttribute(key, attributes[key]);
+            for (const key in attributes) {
+              inputElement.setAttribute(key, attributes[key]);
             }
-        } else if (inputType === "drop"){
+          } else if (inputType === "drop") {
             inputElement = document.createElement('select');
             inputElement.name = fieldName;
             inputElement.id = fieldName;
             const options = attributesString.split(';');
             options.forEach(optionText => {
-                const option = document.createElement('option');
-                option.value = optionText;
-                option.text = optionText;
-                inputElement.appendChild(option);
+              const option = document.createElement('option');
+              option.value = optionText;
+              option.text = optionText;
+              inputElement.appendChild(option);
             });
+          }
+
+          newNodes.push(inputElement);
+          lastIndex = match.index + fullMatch.length;
         }
 
-        newNodes.push(inputElement);
-        lastIndex = match.index + fullMatch.length;
-      }
+        // Add any remaining text after the last match
+        if (lastIndex < text.length) {
+          newNodes.push(document.createTextNode(text.substring(lastIndex)));
+        }
 
-      // Add any remaining text after the last match
-      if (lastIndex < text.length) {
-        newNodes.push(document.createTextNode(text.substring(lastIndex)));
-      }
-
-      // Replace the original text node with the new nodes
-      if (newNodes.length > 0) {
-        element.replaceChild(newNodes[0], textNode);
-        newNodes.slice(1).forEach(newNode => {
-          element.insertBefore(newNode, newNodes[0].nextSibling);
-        });
-      }
+        // Replace the original text node with the new nodes
+        if (newNodes.length > 0) {
+          element.replaceChild(newNodes[0], textNode);
+          newNodes.slice(1).forEach(newNode => {
+            element.insertBefore(newNode, newNodes[0].nextSibling);
+          });
+        }
+      });
     });
-  });
 
-  return tempDiv.innerHTML;
-}
+    return tempDiv.innerHTML;
+  }
 
   /// ==================================
   /// FORM CONTROLS DOM INSERTION END
   /// ==================================
+
+  /// =================================
+  // SEND DOCUMENT TO THE SERVER START
+  /// =================================
+  function requestDocumentgeneration() {
+    const container = document.getElementsByTagName('article')[0];
+
+    if (container) {
+      const htmlContent = container.innerHTML;
+
+      const params = new URLSearchParams();
+      params.append('html', htmlContent);
+
+      fetch('/document/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: params,
+      })
+        .then(response => {
+          if (response.ok) {
+          }
+        })
+        .then(data => {
+          console.log('Success:', data);
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+          alert("An error occurred while saving the template."); // Alert user on error
+        });
+    } else {
+      console.error("Element not found!");
+    }
+  }
+
+  /// =================================
+  // SEND DOCUMENT TO THE SERVER END
+  /// =================================
+
 
   setTimeout(() => {
     insertButton(); // insert the button for the repeat text
