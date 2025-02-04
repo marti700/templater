@@ -188,7 +188,8 @@
       const htmlContent = container.innerHTML;
 
       const params = new URLSearchParams();
-      params.append('html', htmlContent);
+      // TODO: Check that all form fields have values, throw an error if that's not the case
+      params.append('html', replaceFormValues());
 
       fetch('/document/generate', {
         method: 'POST',
@@ -217,6 +218,76 @@
   // SEND DOCUMENT TO THE SERVER END
   /// =================================
 
+
+/**
+ * Replaces form controls within an HTML string with their corresponding values.
+ *
+ * This function takes the HTML content of an article element, clones it to avoid
+ * modifying the original DOM, and then iterates through all form elements (input,
+ * select, textarea) within the cloned article.  It extracts the current value
+ * of each form element and replaces the element itself with a text node containing
+ * the value.  If a form element has no value, it is removed.
+ *
+ * @returns {string} The modified HTML string with form controls replaced by their values.
+ *                   Returns the innerHTML of the modified article element.
+ *
+ * @example
+ * // Assuming you have an article element with id "myArticle"
+ * const originalHtml = document.getElementById('myArticle').innerHTML;
+ * const newHtml = replaceFormValues(); // No need to pass the HTML string anymore.
+ * document.getElementById('myArticle').innerHTML = newHtml; // Update the original element
+ *
+ * // Example HTML (before):
+ * // <article>
+ * //   <input type="text" value="Initial Text">
+ * //   <select>...</select>
+ * // </article>
+ *
+ * // Example HTML (after, assuming the text input was changed to "New Text" and a select option was chosen):
+ * // <article>
+ * //   New Text
+ * //   [Selected Option Value]
+ * // </article>
+ */
+  function replaceFormValues() {
+    // clone the article to not modify the original HTML
+    let art = document.getElementsByTagName('article')[0].cloneNode(true);
+
+    const formElements = art.querySelectorAll('input, select, textarea');
+    console.log(formElements);
+
+    formElements.forEach(element => {
+      const tagName = element.tagName.toLowerCase();
+      let value = '';
+
+      switch (tagName) {
+        case 'input':
+          const type = element.type.toLowerCase();
+          if (type === 'text') {
+            value = element.value;
+          } else if (type === 'radio' || type === 'checkbox') {
+            value = element.checked ? element.value : ''; // Handle checked state
+          }
+          break;
+        case 'select':
+          value = element.options[element.selectedIndex]?.value || ''; // Safe navigation for selected option
+          break;
+        case 'textarea':
+          value = element.value;
+          break;
+      }
+
+      // Replace the element with its value in the HTML string.
+      if (value) {
+        const placeholder = document.createTextNode(value);
+        element.replaceWith(placeholder);
+      } else {
+        element.remove(); // if no value remove the element
+      }
+    });
+
+    return art.innerHTML;
+  }
 
   setTimeout(() => {
     insertButton(); // insert the button for the repeat text
