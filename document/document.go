@@ -2,6 +2,8 @@ package document
 
 import (
 	"bufio"
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -175,6 +177,56 @@ func GenerateDocument(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	document := r.FormValue("html")
+
+	// Get the URL from the env variable or default to localhost:5000
+	url := os.Getenv("PYTHON_SERVICE_URL")
+	if url == "" {
+		url = "http://localhost:5000/generate_and_save" // Or /generate_and_save
+	}
+
+	// Create a new POST request with the HTML content as the body
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer([]byte(document)))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Make the request
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer resp.Body.Close()
+
+	// Check the response status code
+	if resp.StatusCode != http.StatusOK {
+		fmt.Println("Error:", resp.Status)
+		return
+	}
+
+	// Decode the JSON response
+	var result map[string]string // Use a map to handle the JSON
+
+	err = json.NewDecoder(resp.Body).Decode(&result)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// the service returns the keys document and error if the generate_and_encode route was invoked
+	// and the keys message and error if the generate_and_save method was invoked
+	if val, ok := result["document"]; ok { // Check if the "document" key exists
+		fmt.Println("Base64 encoded document:", val)
+		// ... (Now you can decode the base64 string in Go)
+	} else if val, ok := result["message"]; ok { // Check for the "message" key
+		fmt.Println("Message:", val)
+		// ... (Handle the message from the /generate_and_save endpoint)
+	} else if val, ok := result["error"]; ok {
+		fmt.Println("Error from service:", val)
+	}
+
 	fmt.Println(document)
 }
 

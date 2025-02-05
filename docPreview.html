@@ -26,6 +26,7 @@
     let article = document.getElementsByTagName("article")[0].innerHTML;
 
     let repeatStart = article.indexOf('[repeat[[');
+    if (repeatStart == -1) return ''
     let repeatEnd = article.indexOf(']]]');
     let repeatString = article.substring(repeatStart + 9, repeatEnd);
     // let fixedString = ''
@@ -51,6 +52,7 @@
     article = article.replace(']]]', '');
 
     const replaceIndexStart = article.indexOf(repeatString);
+
     console.log(replaceIndexStart);
     console.log('============');
     console.log(repeatString);
@@ -66,13 +68,15 @@
     let mutatedDoc = documentContainer.innerHTML;
     let repeatString = fixedString();
 
-    mutatedDoc = mutatedDoc.replace('[repeat[[', '');
-    mutatedDoc = mutatedDoc.replace(']]]', '');
-    let buttonHtml = `<div id='a-${repeatedID}'><button onclick="replaceHTML('a-${repeatedID}')">Agregar</button></div>`
-    repString[repeatedID] = `<div> ${repeatString} </div> ${buttonHtml}`;
-    repeatedID++;
-    // return mutatedDoc.replaceAll(repeatString, `<div><button id='a1' onclick="replaceHTML('a1')">Agregar</button></div>`);
-    documentContainer.innerHTML = mutatedDoc.replaceAll(repeatString, buttonHtml);
+    if (repeatString != '') {
+      mutatedDoc = mutatedDoc.replace('[repeat[[', '');
+      mutatedDoc = mutatedDoc.replace(']]]', '');
+      let buttonHtml = `<div id='a-${repeatedID}'><button onclick="replaceHTML('a-${repeatedID}')">Agregar</button></div>`
+      repString[repeatedID] = `<div> ${repeatString} </div> ${buttonHtml}`;
+      repeatedID++;
+      // return mutatedDoc.replaceAll(repeatString, `<div><button id='a1' onclick="replaceHTML('a1')">Agregar</button></div>`);
+      documentContainer.innerHTML = mutatedDoc.replaceAll(repeatString, buttonHtml);
+    }
   }
 
   function replaceHTML(elementId) {
@@ -185,7 +189,8 @@
     const container = document.getElementsByTagName('article')[0];
 
     if (container) {
-      const htmlContent = container.innerHTML;
+      const htmlContent = container.outerHTML;
+      console.log(htmlContent);
 
       const params = new URLSearchParams();
       // TODO: Check that all form fields have values, throw an error if that's not the case
@@ -219,36 +224,36 @@
   /// =================================
 
 
-/**
- * Replaces form controls within an HTML string with their corresponding values.
- *
- * This function takes the HTML content of an article element, clones it to avoid
- * modifying the original DOM, and then iterates through all form elements (input,
- * select, textarea) within the cloned article.  It extracts the current value
- * of each form element and replaces the element itself with a text node containing
- * the value.  If a form element has no value, it is removed.
- *
- * @returns {string} The modified HTML string with form controls replaced by their values.
- *                   Returns the innerHTML of the modified article element.
- *
- * @example
- * // Assuming you have an article element with id "myArticle"
- * const originalHtml = document.getElementById('myArticle').innerHTML;
- * const newHtml = replaceFormValues(); // No need to pass the HTML string anymore.
- * document.getElementById('myArticle').innerHTML = newHtml; // Update the original element
- *
- * // Example HTML (before):
- * // <article>
- * //   <input type="text" value="Initial Text">
- * //   <select>...</select>
- * // </article>
- *
- * // Example HTML (after, assuming the text input was changed to "New Text" and a select option was chosen):
- * // <article>
- * //   New Text
- * //   [Selected Option Value]
- * // </article>
- */
+  /**
+   * Replaces form controls within an HTML string with their corresponding values.
+   *
+   * This function takes the HTML content of an article element, clones it to avoid
+   * modifying the original DOM, and then iterates through all form elements (input,
+   * select, textarea) within the cloned article.  It extracts the current value
+   * of each form element and replaces the element itself with a text node containing
+   * the value.  If a form element has no value, it is removed.
+   *
+   * @returns {string} The modified HTML string with form controls replaced by their values.
+   *                   Returns the innerHTML of the modified article element.
+   *
+   * @example
+   * // Assuming you have an article element with id "myArticle"
+   * const originalHtml = document.getElementById('myArticle').innerHTML;
+   * const newHtml = replaceFormValues(); // No need to pass the HTML string anymore.
+   * document.getElementById('myArticle').innerHTML = newHtml; // Update the original element
+   *
+   * // Example HTML (before):
+   * // <article>
+   * //   <input type="text" value="Initial Text">
+   * //   <select>...</select>
+   * // </article>
+   *
+   * // Example HTML (after, assuming the text input was changed to "New Text" and a select option was chosen):
+   * // <article>
+   * //   New Text
+   * //   [Selected Option Value]
+   * // </article>
+   */
   function replaceFormValues() {
     // clone the article to not modify the original HTML
     let art = document.getElementsByTagName('article')[0].cloneNode(true);
@@ -286,7 +291,7 @@
       }
     });
 
-    return art.innerHTML;
+    return art.outerHTML;
   }
 
   setTimeout(() => {
