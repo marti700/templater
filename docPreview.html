@@ -16,7 +16,7 @@
 <script>
   let repString = {};
   let repeatedID = 1;
-  let currentDocument = null;
+  // let currentDocument = null;
 
   /// =========================
   /// BUTTON KUNG-FU
@@ -44,7 +44,7 @@
       let missing = article.substring(article.indexOf(']]]') + 3, article.indexOf('>', repeatEndIdx) + 1);
       console.log(missing);
       // fixedString = fixedString + fixedString.substring(article.indexOf(']]]')+3, article.indexOf('>', repeatEndIdx)+1);
-      repeatString = repeatString + missing;
+      // repeatString = repeatString + missing;
       console.log(repeatString);
     }
 
@@ -93,32 +93,52 @@
   /// FORM CONTROLS DOM INSERTION START
   /// ==================================
 
-  function replaceCurlyBracesWithFormControls(htmlString) {
+  /**
+   * Replaces placeholders within an HTML string with form controls (input or select).
+   *
+   * @param {string} htmlString The HTML string containing placeholders in the format `{fieldName:inputType;attribute1=value1;...}`.
+   * @param {object} [json] An optional JSON object containing data to populate the form fields. If provided, the value of the fieldName will be taken from the json object, if it exists.
+   * @returns {string} The HTML string with form controls inserted in place of the placeholders.
+   *
+   * @example
+   * const html = `<div>{name:input}, {age:input;required=true}, {city:drop;New York;Los Angeles;Chicago}</div>`;
+   * const data = { name: "John Doe", age: "30" };
+   * const newHtml = replaceCurlyBracesWithFormControls(html, data);
+   * // newHtml will be:
+   * // `<div><input type="text" name="name" value="John Doe">, <input type="text" name="age" required="true" value="30">, <select name="city"><option value="New York">New York</option><option value="Los Angeles">Los Angeles</option><option value="Chicago">Chicago</option></select></div>`
+   */
+  function replaceCurlyBracesWithFormControls(htmlString, json) {
+    // Create a temporary div element to parse the HTML string
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = htmlString;
 
+    // Select all elements within the temporary div
     const elementsWithCurlyBraces = tempDiv.querySelectorAll('*');
 
+    // Iterate over each element
     elementsWithCurlyBraces.forEach(element => {
-      // Get all text nodes within the element
+      // Get all text nodes within the current element
       const textNodes = Array.from(element.childNodes).filter(node => node.nodeType === Node.TEXT_NODE);
 
+      // Iterate over each text node within the element
       textNodes.forEach(textNode => {
-        let text = textNode.textContent;
-        let match;
-        let newNodes = [];
+        let text = textNode.textContent; // Get the text content of the node
+        let newNodes = []; // Array to store the new nodes (text and form controls)
+        let currentIndex = 0; // Keep track of the current parsing position within the text
 
-        // Regular expression to find text within curly braces with optional attributes
+        // Regular expression to find placeholders in the format {fieldName:inputType;attribute1=value1;...}
         const regex = /\{([^:]+):(input|drop);?([^}]*)\}/g;
+        let match;
 
-        let lastIndex = 0;
+        // Loop through all matches found in the text node
         while ((match = regex.exec(text)) !== null) {
-          const fullMatch = match[0];
-          const fieldName = match[1];
-          const inputType = match[2];
-          const attributesString = match[3];
-          let attributes = {};
+          const fullMatch = match[0]; // The entire matched placeholder string
+          const fieldName = match[1]; // The name of the field
+          const inputType = match[2]; // The type of input (input or drop)
+          const attributesString = match[3]; // The string containing attributes (e.g., required=true;class=my-class)
+          let attributes = {}; // Object to store the attributes
 
+          // Parse the attributes string into key-value pairs
           if (attributesString) {
             const attributePairs = attributesString.split(';');
             attributePairs.forEach(pair => {
@@ -129,25 +149,27 @@
             });
           }
 
-          // Add the text before the match
-          if (match.index > lastIndex) {
-            newNodes.push(document.createTextNode(text.substring(lastIndex, match.index)));
-          }
+          // Add the text before the match to the newNodes array
+          newNodes.push(document.createTextNode(text.substring(currentIndex, match.index)));
 
           let inputElement;
+          // Create the appropriate form control element based on the inputType
           if (inputType === "input") {
             inputElement = document.createElement('input');
             inputElement.type = 'text';
             inputElement.name = fieldName;
-            inputElement.id = fieldName;
+            // if (json) { // If JSON data is provided
+
+            //   inputElement.value = json[fieldName] || ""; // Set the value from the JSON data, or an empty string if not found
+            // }
+            // Set the attributes on the input element
             for (const key in attributes) {
               inputElement.setAttribute(key, attributes[key]);
             }
           } else if (inputType === "drop") {
             inputElement = document.createElement('select');
             inputElement.name = fieldName;
-            inputElement.id = fieldName;
-            const options = attributesString.split(';');
+            const options = attributesString.split(';'); // Split the attributes string into options
             options.forEach(optionText => {
               const option = document.createElement('option');
               option.value = optionText;
@@ -155,27 +177,19 @@
               inputElement.appendChild(option);
             });
           }
-
-          newNodes.push(inputElement);
-          lastIndex = match.index + fullMatch.length;
+          newNodes.push(inputElement); // Add the form control to the newNodes array
+          currentIndex = match.index + fullMatch.length; // Update the current parsing position
         }
 
-        // Add any remaining text after the last match
-        if (lastIndex < text.length) {
-          newNodes.push(document.createTextNode(text.substring(lastIndex)));
-        }
+        // Add the remaining text after the last match to the newNodes array
+        newNodes.push(document.createTextNode(text.substring(currentIndex)));
 
-        // Replace the original text node with the new nodes
-        if (newNodes.length > 0) {
-          element.replaceChild(newNodes[0], textNode);
-          newNodes.slice(1).forEach(newNode => {
-            element.insertBefore(newNode, newNodes[0].nextSibling);
-          });
-        }
+        // Replace the original text node with the new nodes (text and form controls) in one operation
+        textNode.replaceWith(...newNodes);
       });
     });
 
-    return tempDiv.innerHTML;
+    return tempDiv.innerHTML; // Return the modified HTML string
   }
 
   /// ==================================
