@@ -13,6 +13,25 @@
   </div>
 </div>
 
+<div class="modal fade" id="customerModal" tabindex="-1" aria-labelledby="customerModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="customerModalLabel">Customer Data</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div id="customer-grid"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/gridjs@5.1.0/dist/gridjs.umd.js"></script> -->
+
 <script>
   let repString = {};
   let repeatedID = 1;
@@ -79,11 +98,20 @@
     }
   }
 
-  function replaceHTML(elementId) {
-    let idx = elementId.split('-')[1];
-    elem = document.getElementById(elementId);
-    elem.outerHTML = replaceCurlyBracesWithFormControls(repString[idx])
-  }
+  // function replaceHTML(elementId) {
+  //   let idx = elementId.split('-')[1];
+  //   elem = document.getElementById(elementId);
+  //   // console.log('LO QUE LLEGA ============');
+  //   // console.log(repString[idx]);
+  //   // console.log('LO QUE SALE ============');
+  //   // console.log(replaceCurlyBracesWithFormControls(repString[idx]));
+  //   fetch('/customers/json') // No method, no headers, just the URL
+  //     .then(response => response.json()) // Directly parse JSON
+  //     .then(data => console.log("Simplified Fetch:", data))
+  //     .catch(error => console.error("Simplified Fetch Error:", error));
+
+  //   // elem.outerHTML = replaceCurlyBracesWithFormControls(repString[idx])
+  // }
   /// =========================
   /// BUTTON KUNG-FU END
   /// =========================
@@ -158,10 +186,14 @@
             inputElement = document.createElement('input');
             inputElement.type = 'text';
             inputElement.name = fieldName;
-            // if (json) { // If JSON data is provided
+            if (json) { // If JSON data is provided
+              if (json[fieldName].includes("name")) {
+                const fullName = json["Name"] + " " + json["LastName"];
+                inputElement.value = fullName;
+              }
 
-            //   inputElement.value = json[fieldName] || ""; // Set the value from the JSON data, or an empty string if not found
-            // }
+              inputElement.value = json[fieldName] || ""; // Set the value from the JSON data, or an empty string if not found
+            }
             // Set the attributes on the input element
             for (const key in attributes) {
               inputElement.setAttribute(key, attributes[key]);
@@ -306,6 +338,39 @@
     });
 
     return art.outerHTML;
+  }
+
+
+  function replaceHTML(elementId) {
+    fetch('/customers/json')
+      .then(response => response.json())
+      .then(data => {
+        const gridData = data.map(customer => [
+          `${customer.Name} ${customer.LastName}`,
+          gridjs.html(`<button class="btn btn-sm btn-primary log-button" data-customer='${JSON.stringify(customer)}'>Log Data</button>`)
+        ]);
+
+        const grid = new gridjs.Grid({ // Store the grid instance
+          columns: ["Name", "Actions"],
+          data: gridData,
+          search: true,
+        }).render(document.getElementById("customer-grid"));
+
+
+        const gridContainer = document.getElementById('customer-grid');
+        gridContainer.addEventListener('click', event => {
+          if (event.target.classList.contains('log-button')) {
+            const customerData = JSON.parse(event.target.dataset.customer);
+            console.log("Customer Data:", customerData);
+          }
+        });
+
+        const customerModal = new bootstrap.Modal(document.getElementById('customerModal'));
+        customerModal.show();
+      })
+      .catch(error => console.error("Error:", error));
+
+    elem.outerHTML = repString[idx];
   }
 
   setTimeout(() => {

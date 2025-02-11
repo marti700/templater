@@ -2,6 +2,7 @@ package customer
 
 import (
 	// "database/sql"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"io"
@@ -19,7 +20,7 @@ type Customer struct {
 	LastName    string
 	Address     string
 	Nationality string
-	Ocupation   string
+	Occupation  string
 	CivilStatus string
 	Gender      string
 	PlaceInDoc  string
@@ -35,7 +36,7 @@ func NewCustomerEntity(ID, IDType, name, lastName, address, nationality, ocupati
 		LastName:    lastName,
 		Address:     address,
 		Nationality: nationality,
-		Ocupation:   ocupation,
+		Occupation:  ocupation,
 		CivilStatus: civliStatus,
 		Gender:      gender,
 	}
@@ -61,6 +62,42 @@ func UpdateCustomer(dbconf conf.DBConfig, templatePath string) func(http.Respons
 
 		w.WriteHeader(http.StatusOK)
 		parseTemplate(c, templatePath, w)
+	}
+}
+
+func GetAllCustomersAsJson(dbconf conf.DBConfig) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		customers, err := FindAllCustomers(dbconf)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		custs := make([]Customer, len(customers))
+
+		for i, c := range customers {
+			custs[i] = Customer{
+				ID:          c.ID,
+				IDType:      c.IDType,
+				Name:        c.Name,
+				LastName:    c.LastName,
+				Address:     c.Address,
+				Nationality: c.Nationality,
+				Occupation:  c.Occupation,
+				CivilStatus: c.CivilStatus,
+				Gender:      c.Gender,
+				PlaceInDoc:  "",
+			}
+		}
+
+		// w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Content-Type", "application/json")
+		err = json.NewEncoder(w).Encode(custs)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 }
 
@@ -90,7 +127,7 @@ func GetAllCustomers(dbconf conf.DBConfig, templatePath string) func(w http.Resp
 				LastName:    r.FormValue("lastname"),
 				Address:     r.FormValue("address"),
 				Nationality: r.FormValue("nationality"),
-				Ocupation:   r.FormValue("ocupation"),
+				Occupation:  r.FormValue("ocupation"),
 				CivilStatus: r.FormValue("civilStatus"),
 				Gender:      r.FormValue("gender"),
 			}
@@ -104,7 +141,7 @@ func GetAllCustomers(dbconf conf.DBConfig, templatePath string) func(w http.Resp
 
 			defer stmt.Close()
 
-			res, err := stmt.Exec(c.ID, c.IDType, c.Name, c.LastName, c.Address, c.Nationality, c.Ocupation, c.CivilStatus, c.Gender)
+			res, err := stmt.Exec(c.ID, c.IDType, c.Name, c.LastName, c.Address, c.Nationality, c.Occupation, c.CivilStatus, c.Gender)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
@@ -156,7 +193,7 @@ func GetCustomerById(dbconf conf.DBConfig, templatePath string) func(w http.Resp
 				LastName:    r.FormValue("lastname"),
 				Address:     r.FormValue("address"),
 				Nationality: r.FormValue("nationality"),
-				Ocupation:   r.FormValue("ocupation"),
+				Occupation:  r.FormValue("ocupation"),
 				CivilStatus: r.FormValue("civilStatus"),
 				Gender:      r.FormValue("gender"),
 			}
@@ -174,7 +211,7 @@ func GetCustomerById(dbconf conf.DBConfig, templatePath string) func(w http.Resp
 				c.LastName,
 				c.Address,
 				c.Nationality,
-				c.Ocupation,
+				c.Occupation,
 				c.CivilStatus,
 				c.Gender,
 				c.ID)
@@ -225,7 +262,7 @@ func FindAllCustomers(dbconf conf.DBConfig) ([]Customer, error) {
 
 	for rows.Next() {
 		cus := Customer{}
-		err := rows.Scan(&cus.ID, &cus.IDType, &cus.Name, &cus.LastName, &cus.Address, &cus.Nationality, &cus.Ocupation, &cus.CivilStatus, &cus.Gender)
+		err := rows.Scan(&cus.ID, &cus.IDType, &cus.Name, &cus.LastName, &cus.Address, &cus.Nationality, &cus.Occupation, &cus.CivilStatus, &cus.Gender)
 		if err != nil {
 			log.Fatal(err.Error())
 		}
@@ -246,7 +283,7 @@ func FindCustomerById(dbconf conf.DBConfig, customerId string) (Customer, error)
 
 	}
 	defer stmt.Close()
-	stmt.QueryRow(customerId).Scan(&c.ID, &c.IDType, &c.Name, &c.LastName, &c.Address, &c.Nationality, &c.Ocupation, &c.CivilStatus, &c.Gender)
+	stmt.QueryRow(customerId).Scan(&c.ID, &c.IDType, &c.Name, &c.LastName, &c.Address, &c.Nationality, &c.Occupation, &c.CivilStatus, &c.Gender)
 
 	return c, nil
 }
