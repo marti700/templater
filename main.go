@@ -26,6 +26,7 @@ func main() {
 	http.HandleFunc("/customer/updateCustomer", customer.UpdateCustomer(dbConfig, "edit-customer.html"))
 	http.HandleFunc("/customers", customer.GetAllCustomers(dbConfig, "customers.html"))
 	http.HandleFunc("/customers/json", customer.GetAllCustomersAsJson(dbConfig))
+	http.HandleFunc("/customer/json", customer.GetAllCustomersAsJson(dbConfig))
 	http.HandleFunc("/customer", customer.GetCustomerById(dbConfig, "customer.html"))
 	http.HandleFunc("/customer/select", customer.SelectCustomer(dbConfig, "customer-selection.html"))
 

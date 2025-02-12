@@ -90,32 +90,18 @@
     if (repeatString != '') {
       mutatedDoc = mutatedDoc.replace('[repeat[[', '');
       mutatedDoc = mutatedDoc.replace(']]]', '');
-      let buttonHtml = `<div id='a-${repeatedID}'><button onclick="replaceHTML('a-${repeatedID}')">Agregar</button></div>`
-      repString[repeatedID] = `<div> ${repeatString} </div> ${buttonHtml}`;
+      let buttonHtml = `<div id='a-${repeatedID}'><button onclick="openCustomerSelectionModal('a-${repeatedID}')">Agregar</button></div>`
+      // repString[repeatedID] = `<div> ${repeatString} </div> ${buttonHtml}`;
+      repString[repeatedID] = `<div> ${repeatString} </div>`;
       repeatedID++;
       // return mutatedDoc.replaceAll(repeatString, `<div><button id='a1' onclick="replaceHTML('a1')">Agregar</button></div>`);
       documentContainer.innerHTML = mutatedDoc.replaceAll(repeatString, buttonHtml);
     }
   }
 
-  // function replaceHTML(elementId) {
-  //   let idx = elementId.split('-')[1];
-  //   elem = document.getElementById(elementId);
-  //   // console.log('LO QUE LLEGA ============');
-  //   // console.log(repString[idx]);
-  //   // console.log('LO QUE SALE ============');
-  //   // console.log(replaceCurlyBracesWithFormControls(repString[idx]));
-  //   fetch('/customers/json') // No method, no headers, just the URL
-  //     .then(response => response.json()) // Directly parse JSON
-  //     .then(data => console.log("Simplified Fetch:", data))
-  //     .catch(error => console.error("Simplified Fetch Error:", error));
-
-  //   // elem.outerHTML = replaceCurlyBracesWithFormControls(repString[idx])
-  // }
   /// =========================
   /// BUTTON KUNG-FU END
   /// =========================
-
 
   /// ==================================
   /// FORM CONTROLS DOM INSERTION START
@@ -187,12 +173,13 @@
             inputElement.type = 'text';
             inputElement.name = fieldName;
             if (json) { // If JSON data is provided
-              if (json[fieldName].includes("name")) {
+              if (fieldName.includes("Name")) {
                 const fullName = json["Name"] + " " + json["LastName"];
                 inputElement.value = fullName;
+              } else {
+                inputElement.value = json[fieldName] || ""; // Set the value from the JSON data, or an empty string if not found
               }
 
-              inputElement.value = json[fieldName] || ""; // Set the value from the JSON data, or an empty string if not found
             }
             // Set the attributes on the input element
             for (const key in attributes) {
@@ -220,8 +207,8 @@
         textNode.replaceWith(...newNodes);
       });
     });
-
-    return tempDiv.innerHTML; // Return the modified HTML string
+    // return tempDiv.innerHTML; // Return the modified HTML string
+    return tempDiv; // Return the modified HTML string
   }
 
   /// ==================================
@@ -341,41 +328,78 @@
   }
 
 
-  function replaceHTML(elementId) {
-    fetch('/customers/json')
-      .then(response => response.json())
-      .then(data => {
-        const gridData = data.map(customer => [
-          `${customer.Name} ${customer.LastName}`,
-          gridjs.html(`<button class="btn btn-sm btn-primary log-button" data-customer='${JSON.stringify(customer)}'>Log Data</button>`)
-        ]);
+  let customerModal;
+  let customersLoaded = false;
+  /**
+ * Opens the customer selection modal, populates a grid with customer data,
+ * and handles the selection of a customer.
+ *
+ * This function fetches customer data from the server, renders it in a grid
+ * within a Bootstrap modal, and attaches an event listener to handle customer
+ * selections.  When a customer is selected, it populates a form with the
+ * customer's data and closes the modal.  It also prevents the customer data
+ * from being fetched multiple times.
+ *
+ * @param {string} elementId The ID of the element where the form should be inserted.
+ */
+  function openCustomerSelectionModal(elementId) {
+    let idx = elementId.split('-')[1]; // Extract index from elementId
+    let targetElement = document.getElementById(elementId); // Get the target element
 
-        const grid = new gridjs.Grid({ // Store the grid instance
-          columns: ["Name", "Actions"],
-          data: gridData,
-          search: true,
-        }).render(document.getElementById("customer-grid"));
+    // Check if customer data has already been loaded
+    if (!customersLoaded) {
+      fetch('/customers/json')
+        .then(response => response.json())
+        .then(data => {
+          // Map customer data to grid format
+          const gridData = data.map(customer => [
+            `${customer.Name} ${customer.LastName}`,
+            gridjs.html(`<button class="btn btn-sm btn-primary log-button" id=${customer.ID} data-customer='${JSON.stringify(customer)}'>Selecionar</button>`)
+          ]);
 
+          // Render the grid
+          const grid = new gridjs.Grid({
+            columns: ["Name", "Actions"],
+            data: gridData,
+            search: true,
+          }).render(document.getElementById("customer-grid"));
 
-        const gridContainer = document.getElementById('customer-grid');
-        gridContainer.addEventListener('click', event => {
-          if (event.target.classList.contains('log-button')) {
-            const customerData = JSON.parse(event.target.dataset.customer);
-            console.log("Customer Data:", customerData);
+          // Initialize the modal only once
+          if (!customerModal) {
+            customerModal = new bootstrap.Modal(document.getElementById('customerModal'));
           }
-        });
 
-        const customerModal = new bootstrap.Modal(document.getElementById('customerModal'));
-        customerModal.show();
-      })
-      .catch(error => console.error("Error:", error));
+          const seleccionarButton = document.getElementById('customer-grid');
 
-    elem.outerHTML = repString[idx];
+          // Add event listener for customer selection
+          seleccionarButton.addEventListener('click', event => {
+            if (event.target.classList.contains('log-button')) {
+              const customerData = JSON.parse(event.target.dataset.customer); // from the Seleccionar button data-customer attribute
+              console.log("Customer Data:", customerData);
+
+              // Insert the form with customer data
+              targetElement.insertBefore(
+                replaceCurlyBracesWithFormControls(repString[idx], customerData),
+                targetElement.lastChild
+              );
+
+              customerModal.hide(); // Hide the modal after selection
+            }
+          });
+
+          customerModal.show(); // Show the modal after grid is rendered and listener is attached
+        })
+        .catch(error => console.error("Error:", error));
+    } else {
+      customerModal.show(); // If data is already loaded, just show the modal
+    }
+
+    customersLoaded = true; // Set flag to indicate that customers have been loaded
   }
 
   setTimeout(() => {
     insertButton(); // insert the button for the repeat text
-    document.body.innerHTML = replaceCurlyBracesWithFormControls(document.body.innerHTML);
+    document.body.innerHTML = replaceCurlyBracesWithFormControls(document.body.innerHTML).innerHTML;
   }, 50);
 
 </script>
