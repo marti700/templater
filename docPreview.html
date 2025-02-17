@@ -92,7 +92,7 @@
       mutatedDoc = mutatedDoc.replace(']]]', '');
       let buttonHtml = `<div id='a-${repeatedID}'><button onclick="openCustomerSelectionModal('a-${repeatedID}')">Agregar</button></div>`
       // repString[repeatedID] = `<div> ${repeatString} </div> ${buttonHtml}`;
-      repString[repeatedID] = `<div> ${repeatString} </div>`;
+      repString[repeatedID] = `${repeatString}`;
       repeatedID++;
       // return mutatedDoc.replaceAll(repeatString, `<div><button id='a1' onclick="replaceHTML('a1')">Agregar</button></div>`);
       documentContainer.innerHTML = mutatedDoc.replaceAll(repeatString, buttonHtml);
@@ -208,7 +208,9 @@
       });
     });
     // return tempDiv.innerHTML; // Return the modified HTML string
-    return tempDiv; // Return the modified HTML string
+
+
+    return tempDiv; // Return the modified HTML
   }
 
   /// ==================================
@@ -377,11 +379,16 @@
               const customerData = JSON.parse(event.target.dataset.customer); // from the Seleccionar button data-customer attribute
               console.log("Customer Data:", customerData);
 
+              const formControls = replaceCurlyBracesWithFormControls(repString[idx], customerData);
+
+              // append Eliminar button
+              const deleteButton = document.createElement('button');
+              deleteButton.textContent = "Eliminar";
+              deleteButton.onclick = () => deleteButton.parentNode.remove();
+              formControls.appendChild(deleteButton);
+
               // Insert the form with customer data
-              targetElement.insertBefore(
-                replaceCurlyBracesWithFormControls(repString[idx], customerData),
-                targetElement.lastChild
-              );
+              targetElement.insertBefore(formControls, targetElement.lastChild);
 
               customerModal.hide(); // Hide the modal after selection
             }
