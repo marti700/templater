@@ -41,26 +41,73 @@
   /// BUTTON KUNG-FU
   /// =========================
 
-  function fixedString() {
-    let article = document.getElementsByTagName("article")[0].innerHTML;
+  // function fixedString() {
+  //   let article = document.getElementsByTagName("article")[0].innerHTML;
 
-    let repeatStart = article.indexOf('[repeat[[');
-    if (repeatStart == -1) return ''
-    let repeatEnd = article.indexOf(']]]');
+  //   let repeatStart = article.indexOf('[repeat[[');
+  //   if (repeatStart == -1) return ''
+  //   let repeatEnd = article.indexOf(']]]');
+  //   let repeatString = article.substring(repeatStart + 9, repeatEnd);
+  //   // let fixedString = ''
+
+  //   if (repeatString.indexOf("</") == 0) {
+  //     let closingTag = repeatString.indexOf(">")
+  //     repeatString = repeatString.substring(closingTag + 1)
+  //   }
+
+  //   const repeatEndIdx = article.indexOf('<', article.indexOf(']]]'))
+
+  //   if (article[repeatEndIdx + 1] == '/') {
+  //     console.log(repeatEndIdx)
+  //     console.log(repeatString);
+  //     let missing = article.substring(article.indexOf(']]]') + 3, article.indexOf('>', repeatEndIdx) + 1);
+  //     console.log(missing);
+  //     // fixedString = fixedString + fixedString.substring(article.indexOf(']]]')+3, article.indexOf('>', repeatEndIdx)+1);
+  //     // repeatString = repeatString + missing;
+  //     console.log(repeatString);
+  //   }
+
+  //   article = article.replace('[repeat[[', '');
+  //   article = article.replace(']]]', '');
+
+  //   const replaceIndexStart = article.indexOf(repeatString);
+
+  //   console.log(replaceIndexStart);
+  //   console.log('============');
+  //   console.log(repeatString);
+  //   console.log('============');
+
+  //   return repeatString;
+  // }
+
+  function fixedStrings(article, idx, repeatedStrings) {
+    // let article = document.getElementsByTagName("article")[0].innerHTML;
+
+    let repeatStart = article.indexOf('[repeat[[', idx);
+
+    if (repeatStart == -1) {
+      // console.log(tt);
+      // console.log(repeatedStrings);
+      return repeatedStrings
+    }
+
+    // if (repeatStart == -1) return ''
+
+    let repeatEnd = article.indexOf(']]]', idx);
     let repeatString = article.substring(repeatStart + 9, repeatEnd);
     // let fixedString = ''
 
-    if (repeatString.indexOf("</") == 0) {
+    if (repeatString.indexOf("</", idx) == 0) {
       let closingTag = repeatString.indexOf(">")
       repeatString = repeatString.substring(closingTag + 1)
     }
 
-    const repeatEndIdx = article.indexOf('<', article.indexOf(']]]'))
+    const repeatEndIdx = article.indexOf('<', article.indexOf(']]]', idx))
 
-    if (article[repeatEndIdx + 1] == '/') {
+    if (article[repeatEndIdx + 1] == '/') { // there is a tag missing in the repeated string
       console.log(repeatEndIdx)
       console.log(repeatString);
-      let missing = article.substring(article.indexOf(']]]') + 3, article.indexOf('>', repeatEndIdx) + 1);
+      let missing = article.substring(article.indexOf(']]]', idx) + 3, article.indexOf('>', repeatEndIdx) + 1);
       console.log(missing);
       // fixedString = fixedString + fixedString.substring(article.indexOf(']]]')+3, article.indexOf('>', repeatEndIdx)+1);
       // repeatString = repeatString + missing;
@@ -77,27 +124,50 @@
     console.log(repeatString);
     console.log('============');
 
-    return repeatString;
+    repeatedStrings.push(repeatString)
+    return fixedStrings(article, repeatEndIdx, repeatedStrings);
   }
 
   function insertButton() {
-    // article = article.replace(repeatString, `<div><button onclick="this.parentElement.innerHTML = '${repeatString.replace(/'/g, "\\'")}';">Agregar</button></div>`);
-
     let documentContainer = document.getElementsByTagName("article")[0]
     let mutatedDoc = documentContainer.innerHTML;
-    let repeatString = fixedString();
+    // let repeatedStrings = []
+    let repeatStrings = fixedStrings(mutatedDoc, 0, []);
+    console.log(repeatStrings);
+    // console.log(repeattrings);
 
-    if (repeatString != '') {
+    repeatStrings.forEach(element => {
       mutatedDoc = mutatedDoc.replace('[repeat[[', '');
       mutatedDoc = mutatedDoc.replace(']]]', '');
       let buttonHtml = `<div id='a-${repeatedID}'><button onclick="openCustomerSelectionModal('a-${repeatedID}')">Agregar</button></div>`
       // repString[repeatedID] = `<div> ${repeatString} </div> ${buttonHtml}`;
-      repString[repeatedID] = `${repeatString}`;
+      repString[repeatedID] = `${element}`;
       repeatedID++;
-      // return mutatedDoc.replaceAll(repeatString, `<div><button id='a1' onclick="replaceHTML('a1')">Agregar</button></div>`);
-      documentContainer.innerHTML = mutatedDoc.replaceAll(repeatString, buttonHtml);
-    }
+      mutatedDoc = mutatedDoc.replaceAll(element, buttonHtml);
+    });
+
+    documentContainer.innerHTML = mutatedDoc;
+
   }
+
+  // function insertButton() {
+  //   // article = article.replace(repeatString, `<div><button onclick="this.parentElement.innerHTML = '${repeatString.replace(/'/g, "\\'")}';">Agregar</button></div>`);
+
+  //   let documentContainer = document.getElementsByTagName("article")[0]
+  //   let mutatedDoc = documentContainer.innerHTML;
+  //   let repeatString = fixedString();
+
+  //   if (repeatString != '') {
+  //     mutatedDoc = mutatedDoc.replace('[repeat[[', '');
+  //     mutatedDoc = mutatedDoc.replace(']]]', '');
+  //     let buttonHtml = `<div id='a-${repeatedID}'><button onclick="openCustomerSelectionModal('a-${repeatedID}')">Agregar</button></div>`
+  //     // repString[repeatedID] = `<div> ${repeatString} </div> ${buttonHtml}`;
+  //     repString[repeatedID] = `${repeatString}`;
+  //     repeatedID++;
+  //     // return mutatedDoc.replaceAll(repeatString, `<div><button id='a1' onclick="replaceHTML('a1')">Agregar</button></div>`);
+  //     documentContainer.innerHTML = mutatedDoc.replaceAll(repeatString, buttonHtml);
+  //   }
+  // }
 
   /// =========================
   /// BUTTON KUNG-FU END
@@ -346,7 +416,7 @@
  */
   function openCustomerSelectionModal(elementId) {
     let idx = elementId.split('-')[1]; // Extract index from elementId
-    let targetElement = document.getElementById(elementId); // Get the target element
+    // let targetElement = document.getElementById(elementId); // Get the target element
 
     // Check if customer data has already been loaded
     if (!customersLoaded) {
@@ -356,7 +426,7 @@
           // Map customer data to grid format
           const gridData = data.map(customer => [
             `${customer.Name} ${customer.LastName}`,
-            gridjs.html(`<button class="btn btn-sm btn-primary log-button" id=${customer.ID} data-customer='${JSON.stringify(customer)}'>Selecionar</button>`)
+            gridjs.html(`<button class="btn btn-sm btn-primary log-button" id=${customer.ID} data-customer='${JSON.stringify(customer)}' data-target-element-id="${elementId}">Selecionar</button>`)
           ]);
 
           // Render the grid
@@ -376,6 +446,10 @@
           // Add event listener for customer selection
           seleccionarButton.addEventListener('click', event => {
             if (event.target.classList.contains('log-button')) {
+              //  Get the target element. The dataset.targetElementId="${elementId} comes form the data-target-element-id HTML attribute
+              const targetElementId = event.target.dataset.targetElementId;
+              const targetElement = document.getElementById(targetElementId);
+              // let targetElement = document.getElementById(event.target.dataset.targetElementId);
               const customerData = JSON.parse(event.target.dataset.customer); // from the Seleccionar button data-customer attribute
               console.log("Customer Data:", customerData);
 
