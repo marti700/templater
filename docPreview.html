@@ -41,133 +41,108 @@
   /// BUTTON KUNG-FU
   /// =========================
 
-  // function fixedString() {
-  //   let article = document.getElementsByTagName("article")[0].innerHTML;
-
-  //   let repeatStart = article.indexOf('[repeat[[');
-  //   if (repeatStart == -1) return ''
-  //   let repeatEnd = article.indexOf(']]]');
-  //   let repeatString = article.substring(repeatStart + 9, repeatEnd);
-  //   // let fixedString = ''
-
-  //   if (repeatString.indexOf("</") == 0) {
-  //     let closingTag = repeatString.indexOf(">")
-  //     repeatString = repeatString.substring(closingTag + 1)
-  //   }
-
-  //   const repeatEndIdx = article.indexOf('<', article.indexOf(']]]'))
-
-  //   if (article[repeatEndIdx + 1] == '/') {
-  //     console.log(repeatEndIdx)
-  //     console.log(repeatString);
-  //     let missing = article.substring(article.indexOf(']]]') + 3, article.indexOf('>', repeatEndIdx) + 1);
-  //     console.log(missing);
-  //     // fixedString = fixedString + fixedString.substring(article.indexOf(']]]')+3, article.indexOf('>', repeatEndIdx)+1);
-  //     // repeatString = repeatString + missing;
-  //     console.log(repeatString);
-  //   }
-
-  //   article = article.replace('[repeat[[', '');
-  //   article = article.replace(']]]', '');
-
-  //   const replaceIndexStart = article.indexOf(repeatString);
-
-  //   console.log(replaceIndexStart);
-  //   console.log('============');
-  //   console.log(repeatString);
-  //   console.log('============');
-
-  //   return repeatString;
-  // }
-
-  function fixedStrings(article, idx, repeatedStrings) {
-    // let article = document.getElementsByTagName("article")[0].innerHTML;
-
+  /**
+ * Finds and extracts repeated strings from the given HTML content.
+ *
+ * This function recursively scans the HTML content for strings enclosed in
+ * `[repeat[[...]]]` tags, extracts them, and returns an array of these strings.
+ *
+ * @param {string} article The HTML content to scan.
+ * @param {number} idx The starting index for the search.
+ * @param {Array<string>} repeatedStrings An array to store the extracted strings.
+ * @returns {Array<string>} An array of extracted repeated strings.
+ */
+function fixedStrings(article, idx, repeatedStrings) {
+    // Find the starting index of the next [repeat[[ tag.
     let repeatStart = article.indexOf('[repeat[[', idx);
 
+    // If no more [repeat[[ tags are found, return the array of extracted strings.
     if (repeatStart == -1) {
-      // console.log(tt);
-      // console.log(repeatedStrings);
-      return repeatedStrings
+        return repeatedStrings;
     }
 
-    // if (repeatStart == -1) return ''
-
+    // Find the ending index of the corresponding ]]] tag.
     let repeatEnd = article.indexOf(']]]', idx);
+    // Extract the repeated string.
     let repeatString = article.substring(repeatStart + 9, repeatEnd);
-    // let fixedString = ''
 
+    // Handle cases where the repeated string starts with a closing tag.
     if (repeatString.indexOf("</", idx) == 0) {
-      let closingTag = repeatString.indexOf(">")
-      repeatString = repeatString.substring(closingTag + 1)
+        let closingTag = repeatString.indexOf(">");
+        repeatString = repeatString.substring(closingTag + 1);
     }
 
-    const repeatEndIdx = article.indexOf('<', article.indexOf(']]]', idx))
+    // Find the index of the next opening tag after the ]]] tag.
+    const repeatEndIdx = article.indexOf('<', article.indexOf(']]]', idx));
 
-    if (article[repeatEndIdx + 1] == '/') { // there is a tag missing in the repeated string
-      console.log(repeatEndIdx)
-      console.log(repeatString);
-      let missing = article.substring(article.indexOf(']]]', idx) + 3, article.indexOf('>', repeatEndIdx) + 1);
-      console.log(missing);
-      // fixedString = fixedString + fixedString.substring(article.indexOf(']]]')+3, article.indexOf('>', repeatEndIdx)+1);
-      // repeatString = repeatString + missing;
-      console.log(repeatString);
+    // Handle cases where there is a missing tag in the repeated string.
+    if (article[repeatEndIdx + 1] == '/') {
+        console.log(repeatEndIdx);
+        console.log(repeatString);
+        let missing = article.substring(article.indexOf(']]]', idx) + 3, article.indexOf('>', repeatEndIdx) + 1);
+        console.log(missing);
+        console.log(repeatString);
     }
 
+    // Remove the [repeat[[ and ]]] tags from the article.
     article = article.replace('[repeat[[', '');
     article = article.replace(']]]', '');
 
+    // Log the extracted string and its starting index.
     const replaceIndexStart = article.indexOf(repeatString);
-
     console.log(replaceIndexStart);
     console.log('============');
     console.log(repeatString);
     console.log('============');
 
-    repeatedStrings.push(repeatString)
+    // Add the extracted string to the array.
+    repeatedStrings.push(repeatString);
+    // Recursively call the function to find more repeated strings.
     return fixedStrings(article, repeatEndIdx, repeatedStrings);
-  }
+}
 
-  function insertButton() {
-    let documentContainer = document.getElementsByTagName("article")[0]
+ /**
+ * Inserts "Agregar" buttons into the document based on repeated string patterns.
+ *
+ * This function scans the content of the first `<article>` element for repeated string
+ * patterns enclosed in `[repeat[[...]]]` tags. For each repeated string, it:
+ * 1. Extracts the string and stores it in the `repString` object.
+ * 2. Replaces the repeated string in the document with an "Agregar" button.
+ * 3. Uses an Immediately Invoked Function Expression (IIFE) to create a closure,
+ * ensuring each button's `onclick` handler has access to its unique ID.
+ */
+function insertButton() {
+    // Get the first <article> element in the document.
+    let documentContainer = document.getElementsByTagName("article")[0];
+    // Get the inner HTML of the <article> element.
     let mutatedDoc = documentContainer.innerHTML;
-    // let repeatedStrings = []
+    // Find and extract all repeated strings from the document.
     let repeatStrings = fixedStrings(mutatedDoc, 0, []);
-    console.log(repeatStrings);
-    // console.log(repeattrings);
 
+    // Iterate over each extracted repeated string.
     repeatStrings.forEach(element => {
-      mutatedDoc = mutatedDoc.replace('[repeat[[', '');
-      mutatedDoc = mutatedDoc.replace(']]]', '');
-      let buttonHtml = `<div id='a-${repeatedID}'><button onclick="openCustomerSelectionModal('a-${repeatedID}')">Agregar</button></div>`
-      // repString[repeatedID] = `<div> ${repeatString} </div> ${buttonHtml}`;
-      repString[repeatedID] = `${element}`;
-      repeatedID++;
-      mutatedDoc = mutatedDoc.replaceAll(element, buttonHtml);
+        // Remove the [repeat[[ and ]]] tags from the document.
+        mutatedDoc = mutatedDoc.replace('[repeat[[', '');
+        mutatedDoc = mutatedDoc.replace(']]]', '');
+
+        // Use an IIFE to create a closure for each "Agregar" button.
+        const buttonHtml = (function (uniqueId) {
+            // Return the HTML for the "Agregar" button, with a unique ID and onclick handler.
+            return `<div id='a-${uniqueId}'><button onclick="openCustomerSelectionModal('a-${uniqueId}')">Agregar</button></div>`;
+        })(repeatedID); // Pass the unique ID to the IIFE
+
+        // Store the repeated string in the repString object, using the unique ID as the key.
+        repString[repeatedID] = `${element}`;
+        // Increment the repeatedID counter.
+        repeatedID++;
+        // Replace all occurrences of the repeated string in the document with the "Agregar" button.
+        mutatedDoc = mutatedDoc.replaceAll(element, buttonHtml);
     });
 
+    // Update the inner HTML of the <article> element with the modified content.
     documentContainer.innerHTML = mutatedDoc;
+}
 
-  }
-
-  // function insertButton() {
-  //   // article = article.replace(repeatString, `<div><button onclick="this.parentElement.innerHTML = '${repeatString.replace(/'/g, "\\'")}';">Agregar</button></div>`);
-
-  //   let documentContainer = document.getElementsByTagName("article")[0]
-  //   let mutatedDoc = documentContainer.innerHTML;
-  //   let repeatString = fixedString();
-
-  //   if (repeatString != '') {
-  //     mutatedDoc = mutatedDoc.replace('[repeat[[', '');
-  //     mutatedDoc = mutatedDoc.replace(']]]', '');
-  //     let buttonHtml = `<div id='a-${repeatedID}'><button onclick="openCustomerSelectionModal('a-${repeatedID}')">Agregar</button></div>`
-  //     // repString[repeatedID] = `<div> ${repeatString} </div> ${buttonHtml}`;
-  //     repString[repeatedID] = `${repeatString}`;
-  //     repeatedID++;
-  //     // return mutatedDoc.replaceAll(repeatString, `<div><button id='a1' onclick="replaceHTML('a1')">Agregar</button></div>`);
-  //     documentContainer.innerHTML = mutatedDoc.replaceAll(repeatString, buttonHtml);
-  //   }
-  // }
 
   /// =========================
   /// BUTTON KUNG-FU END
@@ -400,83 +375,174 @@
   }
 
 
-  let customerModal;
-  let customersLoaded = false;
   /**
- * Opens the customer selection modal, populates a grid with customer data,
- * and handles the selection of a customer.
+ * Opens the customer selection modal and loads customer data if it hasn't been loaded yet.
  *
- * This function fetches customer data from the server, renders it in a grid
- * within a Bootstrap modal, and attaches an event listener to handle customer
- * selections.  When a customer is selected, it populates a form with the
- * customer's data and closes the modal.  It also prevents the customer data
- * from being fetched multiple times.
- *
- * @param {string} elementId The ID of the element where the form should be inserted.
+ * @param {string} elementId The ID of the "Agregar" button that triggered the modal.
  */
-  function openCustomerSelectionModal(elementId) {
-    let idx = elementId.split('-')[1]; // Extract index from elementId
-    // let targetElement = document.getElementById(elementId); // Get the target element
+function openCustomerSelectionModal(elementId) {
+    // Store the ID of the clicked "Agregar" button for later use.
+    openCustomerSelectionModal.agregarButtonId = elementId;
+    // Load customer data if needed and then show the modal.
+    loadCustomersIfNeeded(elementId, () => {
+        showCustomerModal();
+    });
+}
 
-    // Check if customer data has already been loaded
-    if (!customersLoaded) {
-      fetch('/customers/json')
-        .then(response => response.json())
-        .then(data => {
-          // Map customer data to grid format
-          const gridData = data.map(customer => [
-            `${customer.Name} ${customer.LastName}`,
-            gridjs.html(`<button class="btn btn-sm btn-primary log-button" id=${customer.ID} data-customer='${JSON.stringify(customer)}' data-target-element-id="${elementId}">Selecionar</button>`)
-          ]);
+/**
+ * Flag to track if customer data has been loaded.
+ * @type {boolean}
+ */
+let customersLoaded = false;
 
-          // Render the grid
-          const grid = new gridjs.Grid({
-            columns: ["Name", "Actions"],
-            data: gridData,
-            search: true,
-          }).render(document.getElementById("customer-grid"));
+/**
+ * Bootstrap modal instance for customer selection.
+ * @type {bootstrap.Modal|null}
+ */
+let customerModal = null;
 
-          // Initialize the modal only once
-          if (!customerModal) {
-            customerModal = new bootstrap.Modal(document.getElementById('customerModal'));
-          }
-
-          const seleccionarButton = document.getElementById('customer-grid');
-
-          // Add event listener for customer selection
-          seleccionarButton.addEventListener('click', event => {
-            if (event.target.classList.contains('log-button')) {
-              //  Get the target element. The dataset.targetElementId="${elementId} comes form the data-target-element-id HTML attribute
-              const targetElementId = event.target.dataset.targetElementId;
-              const targetElement = document.getElementById(targetElementId);
-              // let targetElement = document.getElementById(event.target.dataset.targetElementId);
-              const customerData = JSON.parse(event.target.dataset.customer); // from the Seleccionar button data-customer attribute
-              console.log("Customer Data:", customerData);
-
-              const formControls = replaceCurlyBracesWithFormControls(repString[idx], customerData);
-
-              // append Eliminar button
-              const deleteButton = document.createElement('button');
-              deleteButton.textContent = "Eliminar";
-              deleteButton.onclick = () => deleteButton.parentNode.remove();
-              formControls.appendChild(deleteButton);
-
-              // Insert the form with customer data
-              targetElement.insertBefore(formControls, targetElement.lastChild);
-
-              customerModal.hide(); // Hide the modal after selection
-            }
-          });
-
-          customerModal.show(); // Show the modal after grid is rendered and listener is attached
-        })
-        .catch(error => console.error("Error:", error));
-    } else {
-      customerModal.show(); // If data is already loaded, just show the modal
+/**
+ * Loads customer data from the server if it hasn't been loaded already.
+ *
+ * @param {string} elementId The ID of the "Agregar" button that triggered the modal.
+ * @param {function} callback Function to be executed after customer data is loaded.
+ */
+function loadCustomersIfNeeded(elementId, callback) {
+    // If customer data is already loaded, execute the callback and return.
+    if (customersLoaded) {
+        callback();
+        return;
     }
 
-    customersLoaded = true; // Set flag to indicate that customers have been loaded
-  }
+    // Fetch customer data from the server.
+    fetch('/customers/json')
+        .then(response => response.json())
+        .then(data => {
+            // Render the customer grid with the fetched data.
+            renderCustomerGrid(data);
+            // Initialize the customer modal.
+            initializeCustomerModal();
+            // Set the flag to indicate that customer data has been loaded.
+            customersLoaded = true;
+            // Execute the callback.
+            callback();
+            // Setup event listeners for customer selection.
+            setupCustomerSelection();
+        })
+        .catch(error => console.error("Error:", error));
+}
+
+/**
+ * Renders the customer grid using Grid.js.
+ *
+ * @param {Array} customers Array of customer objects.
+ */
+function renderCustomerGrid(customers) {
+    // Map customer data to the format required by Grid.js.
+    const gridData = customers.map(customer => [
+        `${customer.Name} ${customer.LastName}`,
+        gridjs.html(`<button class="btn btn-sm btn-primary log-button" id=${customer.ID} data-customer='${JSON.stringify(customer)}' data-target-element-id="customer-selection-button-${customer.ID}">Selecionar</button>`)
+    ]);
+
+    // Render the grid.
+    new gridjs.Grid({
+        columns: ["Name", "Actions"],
+        data: gridData,
+        search: true,
+    }).render(document.getElementById("customer-grid"));
+}
+
+/**
+ * Initializes the Bootstrap modal for customer selection.
+ */
+function initializeCustomerModal() {
+    // Create a new Bootstrap modal instance if it doesn't exist.
+    if (!customerModal) {
+        customerModal = new bootstrap.Modal(document.getElementById('customerModal'));
+    }
+}
+
+/**
+ * Sets up event listeners for customer selection buttons in the grid.
+ */
+function setupCustomerSelection() {
+    // Get the grid element.
+    const seleccionarButton = document.getElementById('customer-grid');
+
+    // Add a click event listener to the grid.
+    seleccionarButton.addEventListener('click', event => {
+        // If the clicked element is a "Seleccionar" button, handle the selection.
+        if (event.target.classList.contains('log-button')) {
+            handleCustomerSelection(event);
+        }
+    });
+}
+
+/**
+ * Handles the selection of a customer from the grid.
+ *
+ * @param {Event} event The click event.
+ */
+function handleCustomerSelection(event) {
+    // Extract customer data from the clicked button.
+    const targetElementId = event.target.dataset.targetElementId;
+    const customerData = JSON.parse(event.target.dataset.customer);
+    const customerId = targetElementId.replace("customer-selection-button-", "");
+
+    console.log("Customer Data:", customerData);
+    console.log("Target Customer ID:", customerId);
+
+    // Find the "Agregar" button that triggered the modal.
+    const agregarButtonDiv = document.getElementById(openCustomerSelectionModal.agregarButtonId);
+
+    if (agregarButtonDiv) {
+        // Get the correct index for repString.
+        const idx = openCustomerSelectionModal.agregarButtonId.replace("a-", "");
+        // Create form controls with customer data.
+        const formControls = createFormControls(repString[idx], customerData);
+        // Create a delete button.
+        const deleteButton = createDeleteButton();
+        // Append the delete button to the form controls.
+        formControls.appendChild(deleteButton);
+        // Insert the form controls before the "Agregar" button's div.
+        agregarButtonDiv.insertBefore(formControls, agregarButtonDiv.lastChild);
+    } else {
+        console.error("Agregar button div not found.");
+    }
+    // Hide the customer selection modal.
+    customerModal.hide();
+}
+
+/**
+ * Creates form controls based on the given HTML string and customer data.
+ *
+ * @param {string} repStringItem The HTML string containing placeholders.
+ * @param {object} customerData The customer data to populate the form controls.
+ * @returns {HTMLElement} The created form controls element.
+ */
+function createFormControls(repStringItem, customerData) {
+    // Assuming replaceCurlyBracesWithFormControls is defined elsewhere
+    return replaceCurlyBracesWithFormControls(repStringItem, customerData);
+}
+
+/**
+ * Creates a delete button.
+ *
+ * @returns {HTMLButtonElement} The created delete button.
+ */
+function createDeleteButton() {
+    const deleteButton = document.createElement('button');
+    deleteButton.textContent = "Eliminar";
+    deleteButton.onclick = () => deleteButton.parentNode.remove();
+    return deleteButton;
+}
+
+/**
+ * Shows the customer selection modal.
+ */
+function showCustomerModal() {
+    customerModal.show();
+}
 
   setTimeout(() => {
     insertButton(); // insert the button for the repeat text
