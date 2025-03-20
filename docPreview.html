@@ -52,13 +52,13 @@
  * @param {Array<string>} repeatedStrings An array to store the extracted strings.
  * @returns {Array<string>} An array of extracted repeated strings.
  */
-function fixedStrings(article, idx, repeatedStrings) {
+  function fixedStrings(article, idx, repeatedStrings) {
     // Find the starting index of the next [repeat[[ tag.
     let repeatStart = article.indexOf('[repeat[[', idx);
 
     // If no more [repeat[[ tags are found, return the array of extracted strings.
     if (repeatStart == -1) {
-        return repeatedStrings;
+      return repeatedStrings;
     }
 
     // Find the ending index of the corresponding ]]] tag.
@@ -68,8 +68,8 @@ function fixedStrings(article, idx, repeatedStrings) {
 
     // Handle cases where the repeated string starts with a closing tag.
     if (repeatString.indexOf("</", idx) == 0) {
-        let closingTag = repeatString.indexOf(">");
-        repeatString = repeatString.substring(closingTag + 1);
+      let closingTag = repeatString.indexOf(">");
+      repeatString = repeatString.substring(closingTag + 1);
     }
 
     // Find the index of the next opening tag after the ]]] tag.
@@ -77,11 +77,11 @@ function fixedStrings(article, idx, repeatedStrings) {
 
     // Handle cases where there is a missing tag in the repeated string.
     if (article[repeatEndIdx + 1] == '/') {
-        console.log(repeatEndIdx);
-        console.log(repeatString);
-        let missing = article.substring(article.indexOf(']]]', idx) + 3, article.indexOf('>', repeatEndIdx) + 1);
-        console.log(missing);
-        console.log(repeatString);
+      console.log(repeatEndIdx);
+      console.log(repeatString);
+      let missing = article.substring(article.indexOf(']]]', idx) + 3, article.indexOf('>', repeatEndIdx) + 1);
+      console.log(missing);
+      console.log(repeatString);
     }
 
     // Remove the [repeat[[ and ]]] tags from the article.
@@ -99,19 +99,19 @@ function fixedStrings(article, idx, repeatedStrings) {
     repeatedStrings.push(repeatString);
     // Recursively call the function to find more repeated strings.
     return fixedStrings(article, repeatEndIdx, repeatedStrings);
-}
+  }
 
- /**
- * Inserts "Agregar" buttons into the document based on repeated string patterns.
- *
- * This function scans the content of the first `<article>` element for repeated string
- * patterns enclosed in `[repeat[[...]]]` tags. For each repeated string, it:
- * 1. Extracts the string and stores it in the `repString` object.
- * 2. Replaces the repeated string in the document with an "Agregar" button.
- * 3. Uses an Immediately Invoked Function Expression (IIFE) to create a closure,
- * ensuring each button's `onclick` handler has access to its unique ID.
- */
-function insertButton() {
+  /**
+  * Inserts "Agregar" buttons into the document based on repeated string patterns.
+  *
+  * This function scans the content of the first `<article>` element for repeated string
+  * patterns enclosed in `[repeat[[...]]]` tags. For each repeated string, it:
+  * 1. Extracts the string and stores it in the `repString` object.
+  * 2. Replaces the repeated string in the document with an "Agregar" button.
+  * 3. Uses an Immediately Invoked Function Expression (IIFE) to create a closure,
+  * ensuring each button's `onclick` handler has access to its unique ID.
+  */
+  function insertButton() {
     // Get the first <article> element in the document.
     let documentContainer = document.getElementsByTagName("article")[0];
     // Get the inner HTML of the <article> element.
@@ -121,27 +121,27 @@ function insertButton() {
 
     // Iterate over each extracted repeated string.
     repeatStrings.forEach(element => {
-        // Remove the [repeat[[ and ]]] tags from the document.
-        mutatedDoc = mutatedDoc.replace('[repeat[[', '');
-        mutatedDoc = mutatedDoc.replace(']]]', '');
+      // Remove the [repeat[[ and ]]] tags from the document.
+      mutatedDoc = mutatedDoc.replace('[repeat[[', '');
+      mutatedDoc = mutatedDoc.replace(']]]', '');
 
-        // Use an IIFE to create a closure for each "Agregar" button.
-        const buttonHtml = (function (uniqueId) {
-            // Return the HTML for the "Agregar" button, with a unique ID and onclick handler.
-            return `<div id='a-${uniqueId}'><button onclick="openCustomerSelectionModal('a-${uniqueId}')">Agregar</button></div>`;
-        })(repeatedID); // Pass the unique ID to the IIFE
+      // Use an IIFE to create a closure for each "Agregar" button.
+      const buttonHtml = (function (uniqueId) {
+        // Return the HTML for the "Agregar" button, with a unique ID and onclick handler.
+        return `<div id='a-${uniqueId}'><button onclick="openCustomerSelectionModal('a-${uniqueId}')">Agregar</button></div>`;
+      })(repeatedID); // Pass the unique ID to the IIFE
 
-        // Store the repeated string in the repString object, using the unique ID as the key.
-        repString[repeatedID] = `${element}`;
-        // Increment the repeatedID counter.
-        repeatedID++;
-        // Replace all occurrences of the repeated string in the document with the "Agregar" button.
-        mutatedDoc = mutatedDoc.replaceAll(element, buttonHtml);
+      // Store the repeated string in the repString object, using the unique ID as the key.
+      repString[repeatedID] = `${element}`;
+      // Increment the repeatedID counter.
+      repeatedID++;
+      // Replace all occurrences of the repeated string in the document with the "Agregar" button.
+      mutatedDoc = mutatedDoc.replaceAll(element, buttonHtml);
     });
 
     // Update the inner HTML of the <article> element with the modified content.
     documentContainer.innerHTML = mutatedDoc;
-}
+  }
 
 
   /// =========================
@@ -153,19 +153,19 @@ function insertButton() {
   /// ==================================
 
   /**
-   * Replaces placeholders within an HTML string with form controls (input or select).
-   *
-   * @param {string} htmlString The HTML string containing placeholders in the format `{fieldName:inputType;attribute1=value1;...}`.
-   * @param {object} [json] An optional JSON object containing data to populate the form fields. If provided, the value of the fieldName will be taken from the json object, if it exists.
-   * @returns {string} The HTML string with form controls inserted in place of the placeholders.
-   *
-   * @example
-   * const html = `<div>{name:input}, {age:input;required=true}, {city:drop;New York;Los Angeles;Chicago}</div>`;
-   * const data = { name: "John Doe", age: "30" };
-   * const newHtml = replaceCurlyBracesWithFormControls(html, data);
-   * // newHtml will be:
-   * // `<div><input type="text" name="name" value="John Doe">, <input type="text" name="age" required="true" value="30">, <select name="city"><option value="New York">New York</option><option value="Los Angeles">Los Angeles</option><option value="Chicago">Chicago</option></select></div>`
-   */
+    * Replaces placeholders within an HTML string with form controls (input, select, buttton).
+    *
+    * @param {string} htmlString The HTML string containing placeholders in the format `{fieldName:inputType;attribute1=value1;...}`.
+    * @param {object} [json] An optional JSON object containing data to populate the form fields. If provided, the value of the fieldName will be taken from the json object, if it exists.
+    * @returns {string} The HTML string with form controls inserted in place of the placeholders.
+    *
+    * @example
+    * const html = `<div>{name:input}, {age:input;required=true}, {city:drop;New York;Los Angeles;Chicago}</div>`;
+    * const data = { name: "John Doe", age: "30" };
+    * const newHtml = replaceCurlyBracesWithFormControls(html, data);
+    * // newHtml will be:
+    * // `<div><input type="text" name="name" value="John Doe">, <input type="text" name="age" required="true" value="30">, <select name="city"><option value="New York">New York</option><option value="Los Angeles">Los Angeles</option><option value="Chicago">Chicago</option></select></div>`
+    */
   function replaceCurlyBracesWithFormControls(htmlString, json) {
     // Create a temporary div element to parse the HTML string
     const tempDiv = document.createElement('div');
@@ -186,7 +186,7 @@ function insertButton() {
         let currentIndex = 0; // Keep track of the current parsing position within the text
 
         // Regular expression to find placeholders in the format {fieldName:inputType;attribute1=value1;...}
-        const regex = /\{([^:]+):(input|drop);?([^}]*)\}/g;
+        const regex = /\{([^:]+):(button|input|drop);?([^}]*)\}/g;
         let match;
 
         // Loop through all matches found in the text node
@@ -240,6 +240,16 @@ function insertButton() {
               option.text = optionText;
               inputElement.appendChild(option);
             });
+          } else if (inputType === "button") {
+            inputElement = document.createElement('button');
+            inputElement.textContent = "Generar firmas";
+            inputElement.id = 'signatures'
+            // document.addEventListener('click', function (event) {
+            //   handleSignatureButtonClick(tempDiv);
+            // });
+            // inputElement.addEventListener('click', () => {
+            //   handleSignatureButtonClick(tempDiv);
+            // });
           }
           newNodes.push(inputElement); // Add the form control to the newNodes array
           currentIndex = match.index + fullMatch.length; // Update the current parsing position
@@ -258,6 +268,99 @@ function insertButton() {
     return tempDiv; // Return the modified HTML
   }
 
+  /**
+ * Handles the click event for the signature button, generating a div containing
+ * formatted name and role information from input fields within the document.
+ *
+ * @param {string} elementid The ID of the clicked button element.
+ */
+  function handleSignatureButtonClick(elementid) {
+    // Get the first <article> element in the document, which serves as the container for input fields.
+    let container = document.getElementsByTagName('article')[0];
+
+    // Create a new div element to hold the formatted signature information.
+    const signatureDiv = document.createElement('div');
+
+    // Apply inline styles to the signatureDiv for layout and appearance.
+    signatureDiv.style.display = 'flex';
+    signatureDiv.style.flexWrap = 'wrap';
+    signatureDiv.style.justifyContent = 'center';
+    signatureDiv.style.alignItems = 'center';
+    signatureDiv.style.gap = '10px';
+    signatureDiv.style.border = "1px solid black";
+    signatureDiv.style.padding = "10px";
+
+    // Get the parent node of the clicked button.
+    let buttonParentNode = document.getElementById(elementid).parentNode;
+    console.log(buttonParentNode);
+
+    // Append the signatureDiv to the parent of the clicked button.
+    buttonParentNode.appendChild(signatureDiv);
+
+    // Select all input elements within the container whose 'name' attribute starts with "Name".
+    const nameInputs = Array.from(container.querySelectorAll('input[name^="Name"]'));
+
+    // Select all input elements within the container whose 'name' attribute starts with "role".
+    const roleInputs = Array.from(container.querySelectorAll('input[name^="role"]'));
+
+    // Group name input values by their numerical index (extracted from the 'name' attribute).
+    const nameGroups = {};
+    nameInputs.forEach(input => {
+      const index = parseInt(input.name.replace('Name', '')) || 0;
+      if (!nameGroups[index]) {
+        nameGroups[index] = [];
+      }
+      nameGroups[index].push(input.value);
+    });
+
+    // Store the first encountered role input value for each numerical index.
+    const roleValues = {};
+    roleInputs.forEach(input => {
+      const index = parseInt(input.name.replace('role', '')) || 0;
+      if (!roleValues[index]) {
+        roleValues[index] = input.value;
+      }
+    });
+
+    // Get sorted indices of name groups.
+    const indices = Object.keys(nameGroups).map(Number).sort((a, b) => a - b);
+
+    // Iterate through each index and create formatted signature items.
+    indices.forEach(index => {
+      const nameValues = nameGroups[index];
+      const roleValue = roleValues[index];
+
+      // If both name values and a role value exist for the index, create a signature item.
+      if (nameValues && roleValue) {
+        const signatureItem = document.createElement('div');
+        signatureItem.style.textAlign = 'center';
+        signatureItem.style.flex = '0 0 45%';
+
+        // Create and append name text elements with styling.
+        nameValues.forEach(nameValue => {
+          const nameText = document.createElement('div');
+          nameText.style.fontWeight = 'bold';
+          nameText.style.textDecoration = 'underline';
+          nameText.textContent = nameValue;
+
+          // Create and append role text element with styling.
+          const roleText = document.createElement('div');
+          roleText.style.fontWeight = 'bold';
+          roleText.textContent = roleValue;
+          roleText.style.marginBottom = '40px';
+
+          signatureItem.appendChild(nameText);
+          signatureItem.appendChild(roleText);
+        });
+
+        // Append the signature item to the signatureDiv.
+        signatureDiv.appendChild(signatureItem);
+      }
+    });
+
+    // Append the final signatureDiv to the parent of the clicked button.
+    buttonParentNode.appendChild(signatureDiv);
+  }
   /// ==================================
   /// FORM CONTROLS DOM INSERTION END
   /// ==================================
@@ -380,110 +483,110 @@ function insertButton() {
  *
  * @param {string} elementId The ID of the "Agregar" button that triggered the modal.
  */
-function openCustomerSelectionModal(elementId) {
+  function openCustomerSelectionModal(elementId) {
     // Store the ID of the clicked "Agregar" button for later use.
     openCustomerSelectionModal.agregarButtonId = elementId;
     // Load customer data if needed and then show the modal.
     loadCustomersIfNeeded(elementId, () => {
-        showCustomerModal();
+      showCustomerModal();
     });
-}
+  }
 
-/**
- * Flag to track if customer data has been loaded.
- * @type {boolean}
- */
-let customersLoaded = false;
+  /**
+   * Flag to track if customer data has been loaded.
+   * @type {boolean}
+   */
+  let customersLoaded = false;
 
-/**
- * Bootstrap modal instance for customer selection.
- * @type {bootstrap.Modal|null}
- */
-let customerModal = null;
+  /**
+   * Bootstrap modal instance for customer selection.
+   * @type {bootstrap.Modal|null}
+   */
+  let customerModal = null;
 
-/**
- * Loads customer data from the server if it hasn't been loaded already.
- *
- * @param {string} elementId The ID of the "Agregar" button that triggered the modal.
- * @param {function} callback Function to be executed after customer data is loaded.
- */
-function loadCustomersIfNeeded(elementId, callback) {
+  /**
+   * Loads customer data from the server if it hasn't been loaded already.
+   *
+   * @param {string} elementId The ID of the "Agregar" button that triggered the modal.
+   * @param {function} callback Function to be executed after customer data is loaded.
+   */
+  function loadCustomersIfNeeded(elementId, callback) {
     // If customer data is already loaded, execute the callback and return.
     if (customersLoaded) {
-        callback();
-        return;
+      callback();
+      return;
     }
 
     // Fetch customer data from the server.
     fetch('/customers/json')
-        .then(response => response.json())
-        .then(data => {
-            // Render the customer grid with the fetched data.
-            renderCustomerGrid(data);
-            // Initialize the customer modal.
-            initializeCustomerModal();
-            // Set the flag to indicate that customer data has been loaded.
-            customersLoaded = true;
-            // Execute the callback.
-            callback();
-            // Setup event listeners for customer selection.
-            setupCustomerSelection();
-        })
-        .catch(error => console.error("Error:", error));
-}
+      .then(response => response.json())
+      .then(data => {
+        // Render the customer grid with the fetched data.
+        renderCustomerGrid(data);
+        // Initialize the customer modal.
+        initializeCustomerModal();
+        // Set the flag to indicate that customer data has been loaded.
+        customersLoaded = true;
+        // Execute the callback.
+        callback();
+        // Setup event listeners for customer selection.
+        setupCustomerSelection();
+      })
+      .catch(error => console.error("Error:", error));
+  }
 
-/**
- * Renders the customer grid using Grid.js.
- *
- * @param {Array} customers Array of customer objects.
- */
-function renderCustomerGrid(customers) {
+  /**
+   * Renders the customer grid using Grid.js.
+   *
+   * @param {Array} customers Array of customer objects.
+   */
+  function renderCustomerGrid(customers) {
     // Map customer data to the format required by Grid.js.
     const gridData = customers.map(customer => [
-        `${customer.Name} ${customer.LastName}`,
-        gridjs.html(`<button class="btn btn-sm btn-primary log-button" id=${customer.ID} data-customer='${JSON.stringify(customer)}' data-target-element-id="customer-selection-button-${customer.ID}">Selecionar</button>`)
+      `${customer.Name} ${customer.LastName}`,
+      gridjs.html(`<button class="btn btn-sm btn-primary log-button" id=${customer.ID} data-customer='${JSON.stringify(customer)}' data-target-element-id="customer-selection-button-${customer.ID}">Selecionar</button>`)
     ]);
 
     // Render the grid.
     new gridjs.Grid({
-        columns: ["Name", "Actions"],
-        data: gridData,
-        search: true,
+      columns: ["Name", "Actions"],
+      data: gridData,
+      search: true,
     }).render(document.getElementById("customer-grid"));
-}
+  }
 
-/**
- * Initializes the Bootstrap modal for customer selection.
- */
-function initializeCustomerModal() {
+  /**
+   * Initializes the Bootstrap modal for customer selection.
+   */
+  function initializeCustomerModal() {
     // Create a new Bootstrap modal instance if it doesn't exist.
     if (!customerModal) {
-        customerModal = new bootstrap.Modal(document.getElementById('customerModal'));
+      customerModal = new bootstrap.Modal(document.getElementById('customerModal'));
     }
-}
+  }
 
-/**
- * Sets up event listeners for customer selection buttons in the grid.
- */
-function setupCustomerSelection() {
+  /**
+   * Sets up event listeners for customer selection buttons in the grid.
+   */
+  function setupCustomerSelection() {
     // Get the grid element.
     const seleccionarButton = document.getElementById('customer-grid');
 
     // Add a click event listener to the grid.
     seleccionarButton.addEventListener('click', event => {
-        // If the clicked element is a "Seleccionar" button, handle the selection.
-        if (event.target.classList.contains('log-button')) {
-            handleCustomerSelection(event);
-        }
+      // If the clicked element is a "Seleccionar" button, handle the selection.
+      if (event.target.classList.contains('log-button')) {
+        handleCustomerSelection(event);
+      }
     });
-}
+  }
 
-/**
- * Handles the selection of a customer from the grid.
- *
- * @param {Event} event The click event.
- */
-function handleCustomerSelection(event) {
+  /**
+   * Handles the selection of a customer from the grid.
+   *
+   * @param {Event} event The click event.
+   */
+  function handleCustomerSelection(event) {
     // Extract customer data from the clicked button.
     const targetElementId = event.target.dataset.targetElementId;
     const customerData = JSON.parse(event.target.dataset.customer);
@@ -496,57 +599,60 @@ function handleCustomerSelection(event) {
     const agregarButtonDiv = document.getElementById(openCustomerSelectionModal.agregarButtonId);
 
     if (agregarButtonDiv) {
-        // Get the correct index for repString.
-        const idx = openCustomerSelectionModal.agregarButtonId.replace("a-", "");
-        // Create form controls with customer data.
-        const formControls = createFormControls(repString[idx], customerData);
-        // Create a delete button.
-        const deleteButton = createDeleteButton();
-        // Append the delete button to the form controls.
-        formControls.appendChild(deleteButton);
-        // Insert the form controls before the "Agregar" button's div.
-        agregarButtonDiv.insertBefore(formControls, agregarButtonDiv.lastChild);
+      // Get the correct index for repString.
+      const idx = openCustomerSelectionModal.agregarButtonId.replace("a-", "");
+      // Create form controls with customer data.
+      const formControls = createFormControls(repString[idx], customerData);
+      // Create a delete button.
+      const deleteButton = createDeleteButton();
+      // Append the delete button to the form controls.
+      formControls.appendChild(deleteButton);
+      // Insert the form controls before the "Agregar" button's div.
+      agregarButtonDiv.insertBefore(formControls, agregarButtonDiv.lastChild);
     } else {
-        console.error("Agregar button div not found.");
+      console.error("Agregar button div not found.");
     }
     // Hide the customer selection modal.
     customerModal.hide();
-}
+  }
 
-/**
- * Creates form controls based on the given HTML string and customer data.
- *
- * @param {string} repStringItem The HTML string containing placeholders.
- * @param {object} customerData The customer data to populate the form controls.
- * @returns {HTMLElement} The created form controls element.
- */
-function createFormControls(repStringItem, customerData) {
+  /**
+   * Creates form controls based on the given HTML string and customer data.
+   *
+   * @param {string} repStringItem The HTML string containing placeholders.
+   * @param {object} customerData The customer data to populate the form controls.
+   * @returns {HTMLElement} The created form controls element.
+   */
+  function createFormControls(repStringItem, customerData) {
     // Assuming replaceCurlyBracesWithFormControls is defined elsewhere
     return replaceCurlyBracesWithFormControls(repStringItem, customerData);
-}
+  }
 
-/**
- * Creates a delete button.
- *
- * @returns {HTMLButtonElement} The created delete button.
- */
-function createDeleteButton() {
+  /**
+   * Creates a delete button.
+   *
+   * @returns {HTMLButtonElement} The created delete button.
+   */
+  function createDeleteButton() {
     const deleteButton = document.createElement('button');
     deleteButton.textContent = "Eliminar";
     deleteButton.onclick = () => deleteButton.parentNode.remove();
     return deleteButton;
-}
+  }
 
-/**
- * Shows the customer selection modal.
- */
-function showCustomerModal() {
+  /**
+   * Shows the customer selection modal.
+   */
+  function showCustomerModal() {
     customerModal.show();
-}
+  }
 
   setTimeout(() => {
     insertButton(); // insert the button for the repeat text
     document.body.innerHTML = replaceCurlyBracesWithFormControls(document.body.innerHTML).innerHTML;
+    document.getElementById('signatures').addEventListener('click', () => {
+      handleSignatureButtonClick('signatures');
+    });
   }, 50);
 
 </script>
