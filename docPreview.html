@@ -338,19 +338,24 @@
 
         // Create and append name text elements with styling.
         nameValues.forEach(nameValue => {
-          const nameText = document.createElement('div');
+          const nameTextDiv = document.createElement('div');
+          const nameText = document.createElement('span');
           nameText.style.fontWeight = 'bold';
           nameText.style.textDecoration = 'underline';
           nameText.textContent = nameValue;
+          nameTextDiv.appendChild(nameText);
 
           // Create and append role text element with styling.
-          const roleText = document.createElement('div');
+          const roleTextDiv = document.createElement('div');
+          roleTextDiv.style.marginBottom = '40px';
+
+          const roleText = document.createElement('span');
           roleText.style.fontWeight = 'bold';
           roleText.textContent = roleValue;
-          roleText.style.marginBottom = '40px';
+          roleTextDiv.appendChild(roleText);
 
-          signatureItem.appendChild(nameText);
-          signatureItem.appendChild(roleText);
+          signatureItem.appendChild(nameTextDiv);
+          signatureItem.appendChild(roleTextDiv);
         });
 
         // Append the signature item to the signatureDiv.
