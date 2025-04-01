@@ -652,12 +652,57 @@
     customerModal.show();
   }
 
+  /**
+ * Synchronizes the values of input fields whose name attribute starts with "role".
+ * When an input field loses focus (blur event), this function updates the values
+ * of all other input fields with the exact same name to match the changed value.
+ *
+ * @function syncRoleInputs
+ * @returns {void}
+ *
+ * @example
+ * // Call the function to enable the synchronization:
+ * syncRoleInputs();
+ *
+ * // HTML Example:
+ * // <input type="text" name="role1" />
+ * // <input type="text" name="role1" />
+ * // <input type="text" name="role2" />
+ * // <input type="text" name="role2" />
+ */
+  function syncRoleInputs() {
+    // Select all input elements whose name attribute starts with "role" using a CSS selector.
+    // The ^= operator means "starts with".
+    const roleInputs = document.querySelectorAll('input[name^="role"]');
+
+    // Iterate over each selected input element.
+    roleInputs.forEach(input => {
+      // Attach an 'blur' event listener to each input.
+      input.addEventListener('blur', function () {
+        // Get the name attribute of the input that triggered the event.
+        const currentName = this.name;
+        // Get the current value of the input that triggered the event.
+        const currentValue = this.value;
+
+        // Iterate over all roleInputs again to find other inputs with the same name.
+        roleInputs.forEach(otherInput => {
+          // Check if the otherInput is not the current input and if it has the same name.
+          if (otherInput !== this && otherInput.name === currentName) {
+            // Update the value of the otherInput to match the currentValue.
+            otherInput.value = currentValue;
+          }
+        });
+      });
+    });
+  }
+
   setTimeout(() => {
     insertButton(); // insert the button for the repeat text
     document.body.innerHTML = replaceCurlyBracesWithFormControls(document.body.innerHTML).innerHTML;
     document.getElementById('signatures').addEventListener('click', () => {
       handleSignatureButtonClick('signatures');
     });
+    syncRoleInputs();
   }, 50);
 
 </script>
