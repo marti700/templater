@@ -167,105 +167,83 @@
     * // `<div><input type="text" name="name" value="John Doe">, <input type="text" name="age" required="true" value="30">, <select name="city"><option value="New York">New York</option><option value="Los Angeles">Los Angeles</option><option value="Chicago">Chicago</option></select></div>`
     */
   function replaceCurlyBracesWithFormControls(htmlString, json) {
-    // Create a temporary div element to parse the HTML string
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = htmlString;
 
-    // Select all elements within the temporary div
-    const elementsWithCurlyBraces = tempDiv.querySelectorAll('*');
+    const elementsWithPlaceholders = tempDiv.querySelectorAll('*');
 
-    // Iterate over each element
-    elementsWithCurlyBraces.forEach(element => {
-      // Get all text nodes within the current element
-      const textNodes = Array.from(element.childNodes).filter(node => node.nodeType === Node.TEXT_NODE);
+    elementsWithPlaceholders.forEach(element => {
+      Array.from(element.childNodes).filter(node => node.nodeType === Node.TEXT_NODE).forEach(textNode => {
+        let text = textNode.textContent;
+        let newNodes = [];
+        let currentIndex = 0;
 
-      // Iterate over each text node within the element
-      textNodes.forEach(textNode => {
-        let text = textNode.textContent; // Get the text content of the node
-        let newNodes = []; // Array to store the new nodes (text and form controls)
-        let currentIndex = 0; // Keep track of the current parsing position within the text
-
-        // Regular expression to find placeholders in the format {fieldName:inputType;attribute1=value1;...}
-        const regex = /\{([^:]+):(button|input|drop);?([^}]*)\}/g;
+        // Regular expression to find both form control placeholders and signature reference placeholders
+        const regex = /\{([^:]+):(button|input|drop);?([^}]*)\}|\{(signatureref)\}/g;
         let match;
 
-        // Loop through all matches found in the text node
         while ((match = regex.exec(text)) !== null) {
-          const fullMatch = match[0]; // The entire matched placeholder string
-          const fieldName = match[1]; // The name of the field
-          const inputType = match[2]; // The type of input (input or drop)
-          const attributesString = match[3]; // The string containing attributes (e.g., required=true;class=my-class)
-          let attributes = {}; // Object to store the attributes
+          const fullMatch = match[0];
+          const formControlFieldName = match[1];
+          const inputType = match[2];
+          const attributesString = match[3];
+          const signatureRef = match[4]// Captures either signatureref1 or signatureref2
 
-          // Parse the attributes string into key-value pairs
-          if (attributesString) {
-            const attributePairs = attributesString.split(';');
-            attributePairs.forEach(pair => {
-              const [key, value] = pair.split('=');
-              if (key && value) {
-                attributes[key.trim()] = value.trim();
-              }
-            });
-          }
-
-          // Add the text before the match to the newNodes array
           newNodes.push(document.createTextNode(text.substring(currentIndex, match.index)));
 
-          let inputElement;
-          // Create the appropriate form control element based on the inputType
-          if (inputType === "input") {
-            inputElement = document.createElement('input');
-            inputElement.type = 'text';
-            inputElement.name = fieldName;
-            if (json) { // If JSON data is provided
-              if (fieldName.includes("Name")) {
-                const fullName = json["Name"] + " " + json["LastName"];
-                inputElement.value = fullName;
-              } else {
-                inputElement.value = json[fieldName] || ""; // Set the value from the JSON data, or an empty string if not found
+          if (signatureRef) {
+            // Create an empty div for signature references
+            const signatureDiv = document.createElement('div');
+            signatureDiv.id = signatureRef; // Set the ID to identify it later
+            newNodes.push(signatureDiv);
+          } else if (inputType) {
+            let inputElement;
+            if (inputType === "input") {
+              inputElement = document.createElement('input');
+              inputElement.type = 'text';
+              inputElement.name = formControlFieldName;
+              if (json) {
+                if (formControlFieldName.includes("Name")) {
+                  const fullName = json["Name"] + " " + json["LastName"];
+                  inputElement.value = fullName;
+                } else {
+                  inputElement.value = json[formControlFieldName] || "";
+                }
               }
-
+              if (attributesString) {
+                attributesString.split(';').forEach(pair => {
+                  const [key, value] = pair.split('=');
+                  if (key && value) {
+                    inputElement.setAttribute(key.trim(), value.trim());
+                  }
+                });
+              }
+            } else if (inputType === "drop") {
+              inputElement = document.createElement('select');
+              inputElement.name = formControlFieldName;
+              if (attributesString) {
+                attributesString.split(';').forEach(optionText => {
+                  const option = document.createElement('option');
+                  option.value = optionText;
+                  option.text = optionText;
+                  inputElement.appendChild(option);
+                });
+              }
+            } else if (inputType === "button") {
+              inputElement = document.createElement('button');
+              inputElement.textContent = "Generar firmas";
+              inputElement.id = 'signatures';
             }
-            // Set the attributes on the input element
-            for (const key in attributes) {
-              inputElement.setAttribute(key, attributes[key]);
-            }
-          } else if (inputType === "drop") {
-            inputElement = document.createElement('select');
-            inputElement.name = fieldName;
-            const options = attributesString.split(';'); // Split the attributes string into options
-            options.forEach(optionText => {
-              const option = document.createElement('option');
-              option.value = optionText;
-              option.text = optionText;
-              inputElement.appendChild(option);
-            });
-          } else if (inputType === "button") {
-            inputElement = document.createElement('button');
-            inputElement.textContent = "Generar firmas";
-            inputElement.id = 'signatures'
-            // document.addEventListener('click', function (event) {
-            //   handleSignatureButtonClick(tempDiv);
-            // });
-            // inputElement.addEventListener('click', () => {
-            //   handleSignatureButtonClick(tempDiv);
-            // });
+            newNodes.push(inputElement);
           }
-          newNodes.push(inputElement); // Add the form control to the newNodes array
-          currentIndex = match.index + fullMatch.length; // Update the current parsing position
+          currentIndex = match.index + fullMatch.length;
         }
-
-        // Add the remaining text after the last match to the newNodes array
         newNodes.push(document.createTextNode(text.substring(currentIndex)));
-
-        // Replace the original text node with the new nodes (text and form controls) in one operation
         textNode.replaceWith(...newNodes);
       });
     });
-    // return tempDiv.innerHTML; // Return the modified HTML string
 
-
-    return tempDiv; // Return the modified HTML
+    return tempDiv;
   }
 
   /**
@@ -326,9 +304,11 @@
     const indices = Object.keys(nameGroups).map(Number).sort((a, b) => a - b);
 
     // Iterate through each index and create formatted signature items.
+    notarizationNames = []
     indices.forEach(index => {
       const nameValues = nameGroups[index];
       const roleValue = roleValues[index];
+      notarizationNames.push(nameValues);
 
       // If both name values and a role value exist for the index, create a signature item.
       if (nameValues && roleValue) {
@@ -365,7 +345,25 @@
 
     // Append the final signatureDiv to the parent of the clicked button.
     buttonParentNode.appendChild(signatureDiv);
+
+    // Notorization paragraph names
+    notarizationNames.flat().forEach((nameValue, index, array) => {
+      console.log("aqui");
+      const nameText = document.createElement('span');
+      nameText.style.fontWeight = 'bold';
+
+      if (index == array.length - 2) {
+        nameText.textContent = nameValue;
+      } else if (index < array.length - 1) {
+        nameText.textContent = nameValue + ", ";
+      } else {
+        nameText.textContent = " Y " + nameValue;
+      }
+
+      document.getElementById("signatureref").appendChild(nameText);
+    });
   }
+
   /// ==================================
   /// FORM CONTROLS DOM INSERTION END
   /// ==================================
