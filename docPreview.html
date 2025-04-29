@@ -53,6 +53,7 @@
  * @returns {Array<string>} An array of extracted repeated strings.
  */
   function fixedStrings(article, idx, repeatedStrings) {
+    console.log("Bien;;");
     // Find the starting index of the next [repeat[[ tag.
     let repeatStart = article.indexOf('[repeat[[', idx);
 
@@ -67,7 +68,7 @@
     let repeatString = article.substring(repeatStart + 9, repeatEnd);
 
     // Handle cases where the repeated string starts with a closing tag.
-    if (repeatString.indexOf("</", idx) == 0) {
+    if (repeatString.indexOf("</") == 0) {
       let closingTag = repeatString.indexOf(">");
       repeatString = repeatString.substring(closingTag + 1);
     }
@@ -128,7 +129,7 @@
       // Use an IIFE to create a closure for each "Agregar" button.
       const buttonHtml = (function (uniqueId) {
         // Return the HTML for the "Agregar" button, with a unique ID and onclick handler.
-        return `<div id='a-${uniqueId}'><button onclick="openCustomerSelectionModal('a-${uniqueId}')">Agregar</button></div>`;
+        return `<span name="dummy" id='a-${uniqueId}'><button onclick="openCustomerSelectionModal('a-${uniqueId}')">Agregar</button></span>`;
       })(repeatedID); // Pass the unique ID to the IIFE
 
       // Store the repeated string in the repString object, using the unique ID as the key.
@@ -137,6 +138,7 @@
       repeatedID++;
       // Replace all occurrences of the repeated string in the document with the "Agregar" button.
       mutatedDoc = mutatedDoc.replaceAll(element, buttonHtml);
+      console.log("bien");
     });
 
     // Update the inner HTML of the <article> element with the modified content.

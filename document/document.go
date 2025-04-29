@@ -219,10 +219,10 @@ func GenerateDocument(w http.ResponseWriter, r *http.Request) {
 	// and the keys message and error if the generate_and_save method was invoked
 	if val, ok := result["document"]; ok { // Check if the "document" key exists
 		fmt.Println("Base64 encoded document:", val)
-		// ... (Now you can decode the base64 string in Go)
+		// TODO: decode the base64 string in Go)
 	} else if val, ok := result["message"]; ok { // Check for the "message" key
 		fmt.Println("Message:", val)
-		// ... (Handle the message from the /generate_and_save endpoint)
+		// TODO: (Handle the message from the /generate_and_save endpoint)
 	} else if val, ok := result["error"]; ok {
 		fmt.Println("Error from service:", val)
 	}
