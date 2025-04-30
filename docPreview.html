@@ -248,34 +248,19 @@
     return tempDiv;
   }
 
-  /**
- * Handles the click event for the signature button, generating a div containing
- * formatted name and role information from input fields within the document.
- *
- * @param {string} elementid The ID of the clicked button element.
- */
+
   function handleSignatureButtonClick(elementid) {
     // Get the first <article> element in the document, which serves as the container for input fields.
     let container = document.getElementsByTagName('article')[0];
 
-    // Create a new div element to hold the formatted signature information.
-    const signatureDiv = document.createElement('div');
-
-    // Apply inline styles to the signatureDiv for layout and appearance.
-    signatureDiv.style.display = 'flex';
-    signatureDiv.style.flexWrap = 'wrap';
-    signatureDiv.style.justifyContent = 'center';
-    signatureDiv.style.alignItems = 'center';
-    signatureDiv.style.gap = '10px';
-    signatureDiv.style.border = "1px solid black";
-    signatureDiv.style.padding = "10px";
-
     // Get the parent node of the clicked button.
-    let buttonParentNode = document.getElementById(elementid).parentNode;
-    console.log(buttonParentNode);
+    let buttonParentNode = document.getElementById(elementid).parentNode.parentNode;
 
-    // Append the signatureDiv to the parent of the clicked button.
-    buttonParentNode.appendChild(signatureDiv);
+    // Check if buttonParentNode exists
+    if (!buttonParentNode) {
+      console.error(`Element with id ${elementid} not found.`);
+      return; // Exit the function if the element is not found
+    }
 
     // Select all input elements within the container whose 'name' attribute starts with "Name".
     const nameInputs = Array.from(container.querySelectorAll('input[name^="Name"]'));
@@ -305,66 +290,175 @@
     // Get sorted indices of name groups.
     const indices = Object.keys(nameGroups).map(Number).sort((a, b) => a - b);
 
-    // Iterate through each index and create formatted signature items.
-    notarizationNames = []
-    indices.forEach(index => {
-      const nameValues = nameGroups[index];
-      const roleValue = roleValues[index];
-      notarizationNames.push(nameValues);
-
-      // If both name values and a role value exist for the index, create a signature item.
-      if (nameValues && roleValue) {
-        const signatureItem = document.createElement('div');
-        signatureItem.style.textAlign = 'center';
-        signatureItem.style.flex = '0 0 45%';
-
-        // Create and append name text elements with styling.
-        nameValues.forEach(nameValue => {
-          const nameTextDiv = document.createElement('div');
-          const nameText = document.createElement('span');
-          nameText.style.fontWeight = 'bold';
-          nameText.style.textDecoration = 'underline';
-          nameText.textContent = nameValue;
-          nameTextDiv.appendChild(nameText);
-
-          // Create and append role text element with styling.
-          const roleTextDiv = document.createElement('div');
-          roleTextDiv.style.marginBottom = '40px';
-
-          const roleText = document.createElement('span');
-          roleText.style.fontWeight = 'bold';
-          roleText.textContent = roleValue;
-          roleTextDiv.appendChild(roleText);
-
-          signatureItem.appendChild(nameTextDiv);
-          signatureItem.appendChild(roleTextDiv);
-        });
-
-        // Append the signature item to the signatureDiv.
-        signatureDiv.appendChild(signatureItem);
-      }
+    // Create the zipped array.
+    const zippedData = indices.map(index => {
+      return {
+        names: nameGroups[index] || [],
+        role: roleValues[index] || ''
+      };
     });
 
-    // Append the final signatureDiv to the parent of the clicked button.
-    buttonParentNode.appendChild(signatureDiv);
+    // Create a fragment to hold all the new elements before inserting them
+    const fragment = document.createDocumentFragment();
 
-    // Notorization paragraph names
-    notarizationNames.flat().forEach((nameValue, index, array) => {
-      console.log("aqui");
-      const nameText = document.createElement('span');
-      nameText.style.fontWeight = 'bold';
+    zippedData.forEach(data => {
+      let namesHTML = '';
+      const uniqueNames = [...new Set(data.names)]; // Remove duplicate names
 
-      if (index == array.length - 2) {
-        nameText.textContent = nameValue;
-      } else if (index < array.length - 1) {
-        nameText.textContent = nameValue + ", ";
-      } else {
-        nameText.textContent = " Y " + nameValue;
-      }
+      uniqueNames.forEach((name, nameIndex) => {
+        namesHTML += `<span style="font-weight: bold; min-height: 14pt; font-size: 14pt; text-decoration: underline;">${name}</span>`;
+        if (nameIndex < uniqueNames.length - 1) { // Add space, but not after the last name
+          namesHTML += `<span style="font-weight: bold; min-height: 14pt; font-size: 14pt; margin-right: 25%; text-align: right"> </span>
+                      <span style="font-weight: bold; min-height: 14pt; font-size: 14pt; margin-right: 25%; text-align: left"> </span>`;
+        }
+      });
 
-      document.getElementById("signatureref").appendChild(nameText);
+      // Create and append the names paragraph
+      const namesParagraph = document.createElement('p');
+      namesParagraph.style.width = '100%';
+      namesParagraph.style.textAlign = 'justify';
+      namesParagraph.innerHTML = namesHTML;
+      fragment.appendChild(namesParagraph);
+
+      // Create and append the roles paragraph
+      const rolesParagraph = document.createElement('p');
+      rolesParagraph.style.textAlign = 'justify';
+      rolesParagraph.innerHTML = `
+      <span style="min-height: 14pt; font-size: 14pt; margin-right: 25%; text-align: right"> </span>
+      <span style="min-height: 14pt; font-size: 14pt;">${data.role}</span>
+      <span style="min-height: 14pt; font-size: 14pt; margin-right: 25%; text-align: right"></span>
+      <span style="min-height: 14pt; font-size: 14pt;">${data.role}</span>
+    `;
+      fragment.appendChild(rolesParagraph);
+
+      // Create and append the empty paragraphs
+      const emptyParagraph1 = document.createElement('p');
+      emptyParagraph1.style.textAlign = 'justify';
+      fragment.appendChild(emptyParagraph1);
+
+      const emptyParagraph2 = document.createElement('p');
+      emptyParagraph2.style.marginRight = '-44pt';
+      emptyParagraph2.style.textAlign = 'justify';
+      fragment.appendChild(emptyParagraph2);
     });
+
+    // Insert the fragment containing all the new elements after the button
+    buttonParentNode.parentNode.insertBefore(fragment, buttonParentNode.nextSibling);
+
+    console.log(zippedData);
+    // return zippedData; // Removed the return, as per your original code
   }
+
+
+
+  //   /**
+  //  * Handles the click event for the signature button, generating a div containing
+  //  * formatted name and role information from input fields within the document.
+  //  *
+  //  * @param {string} elementid The ID of the clicked button element.
+  //  */
+  //   function handleSignatureButtonClick(elementid) {
+
+  //     // Get the first <article> element in the document, which serves as the container for input fields.
+  //     let container = document.getElementsByTagName('article')[0];
+
+  //     // Get the parent node of the clicked button.
+  //     let buttonParentNode = document.getElementById(elementid).parentNode;
+  //     console.log(buttonParentNode);
+
+  //     // Append the signatureDiv to the parent of the clicked button.
+  //     buttonParentNode.appendChild(signatureDiv);
+
+  //     // Select all input elements within the container whose 'name' attribute starts with "Name".
+  //     const nameInputs = Array.from(container.querySelectorAll('input[name^="Name"]'));
+
+  //     // Select all input elements within the container whose 'name' attribute starts with "role".
+  //     const roleInputs = Array.from(container.querySelectorAll('input[name^="role"]'));
+
+  //     // Group name input values by their numerical index (extracted from the 'name' attribute).
+  //     const nameGroups = {};
+  //     nameInputs.forEach(input => {
+  //       const index = parseInt(input.name.replace('Name', '')) || 0;
+  //       if (!nameGroups[index]) {
+  //         nameGroups[index] = [];
+  //       }
+  //       nameGroups[index].push(input.value);
+  //     });
+
+  //     // Store the first encountered role input value for each numerical index.
+  //     const roleValues = {};
+  //     roleInputs.forEach(input => {
+  //       const index = parseInt(input.name.replace('role', '')) || 0;
+  //       if (!roleValues[index]) {
+  //         roleValues[index] = input.value;
+  //       }
+  //     });
+
+  //     // Get sorted indices of name groups.
+  //     const indices = Object.keys(nameGroups).map(Number).sort((a, b) => a - b);
+
+  //     // Iterate through each index and create formatted signature items.
+  //     notarizationNames = []
+  //     indices.forEach(index => {
+  //       const nameValues = nameGroups[index];
+  //       const roleValue = roleValues[index];
+  //       notarizationNames.push(nameValues);
+
+
+
+  //       // If both name values and a role value exist for the index, create a signature item.
+  //       if (nameValues && roleValue) {
+  //         // const signatureItem = document.createElement('div');
+  //         // signatureItem.style.textAlign = 'center';
+  //         // signatureItem.style.flex = '0 0 45%';
+
+  //         // Create and append name text elements with styling.
+  //         nameValues.forEach(nameValue => {
+
+  //           // const nameTextDiv = document.createElement('div');
+  //           const nameText = document.createElement('span');
+  //           nameText.style.fontWeight = 'bold';
+  //           nameText.style.textDecoration = 'underline';
+  //           nameText.textContent = nameValue;
+  //           buttonParentNode.appendChild(nameText);
+
+  //           // Create and append role text element with styling.
+  //           const roleTextDiv = document.createElement('div');
+  //           roleTextDiv.style.marginBottom = '40px';
+
+  //           const roleText = document.createElement('span');
+  //           roleText.style.fontWeight = 'bold';
+  //           roleText.textContent = roleValue;
+  //           roleTextDiv.appendChild(roleText);
+
+  //           signatureItem.appendChild(nameTextDiv);
+  //           signatureItem.appendChild(roleTextDiv);
+  //         });
+
+  //         // Append the signature item to the signatureDiv.
+  //         signatureDiv.appendChild(signatureItem);
+  //       }
+  //     });
+
+  //     // Append the final signatureDiv to the parent of the clicked button.
+
+  //     // Notorization paragraph names
+  //     notarizationNames.flat().forEach((nameValue, index, array) => {
+  //       console.log("aqui");
+  //       const nameText = document.createElement('span');
+  //       nameText.style.fontWeight = 'bold';
+
+  //       if (index == array.length - 2) {
+  //         nameText.textContent = nameValue;
+  //       } else if (index < array.length - 1) {
+  //         nameText.textContent = nameValue + ", ";
+  //       } else {
+  //         nameText.textContent = " Y " + nameValue;
+  //       }
+
+  //       document.getElementById("signatureref").appendChild(nameText);
+  //     });
+  //   }
 
   /// ==================================
   /// FORM CONTROLS DOM INSERTION END
